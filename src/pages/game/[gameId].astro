@@ -1,6 +1,5 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import PlayButton from "../lib/PlayButton";
+import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout title="Welcome to Astro.">
@@ -14,10 +13,6 @@ import PlayButton from "../lib/PlayButton";
           sequences!
         </p>
       </header>
-
-      <div>
-        <PlayButton title="Let's Play" client:load />
-      </div>
     </div>
   </main>
 </Layout>
