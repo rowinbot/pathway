@@ -1,9 +1,8 @@
 ---
 import Layout from "../layouts/base-layout.astro";
-import PlayButton from "../lib/play-button";
 ---
 
-<Layout title="Welcome to Astro.">
+<Layout title="Welcome to Pathway">
   <main class="py-8 flex flex-col">
     <div class="mx-auto max-w-xl space-y-8">
       <header class="space-y-4">
@@ -16,7 +15,9 @@ import PlayButton from "../lib/play-button";
       </header>
 
       <div>
-        <PlayButton title="Let's Play" client:load />
+        <a class="text-xl bg-black px-4 py-2 text-white" href="/game">
+          Let's Play
+        </a>
       </div>
     </div>
   </main>
