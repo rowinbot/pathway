@@ -1,6 +1,6 @@
 # Pathway Game
 
-This is the Pathway game a spin-off of the Sequence game, written in Astro mainly (The Glue®) with the logic components behind the game written in Svelte and the lobby components written in Solid.
+This is The Pathway Game (a spin-off of Sequence), written in Astro mainly (The Glue®) with the logic components behind the game written in Svelte and the lobby components written in Solid.
 
 ## 🙋‍♀️ Why three frameworks?
 
