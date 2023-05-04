@@ -1,10 +1,11 @@
 ---
+import Anchor from "../components/anchor.astro";
 import Layout from "../layouts/base-layout.astro";
 ---
 
 <Layout title="Welcome to Pathway">
   <main class="py-8 flex flex-col">
-    <div class="mx-auto max-w-xl space-y-8">
+    <div class="max-w-7xl w-full px-8 mx-auto space-y-8">
       <header class="space-y-4">
         <h1 class="font-black text-5xl">Welcome to Pathway</h1>
 
@@ -15,9 +16,7 @@ import Layout from "../layouts/base-layout.astro";
       </header>
 
       <div>
-        <a class="text-xl bg-black px-4 py-2 text-white" href="/game">
-          Let's Play
-        </a>
+        <Anchor href="/game">Let's Play</Anchor>
       </div>
     </div>
   </main>

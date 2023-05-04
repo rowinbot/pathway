@@ -1,0 +1,31 @@
+---
+interface Props {
+  href: string;
+  target?: string;
+  rel?: string;
+  size?: "sm" | "base";
+  variant?: "underline" | "base";
+}
+
+const {
+  href,
+  target = "_self",
+  rel,
+  size = "base",
+  variant = "base",
+} = Astro.props;
+---
+
+<a
+  class:list={[
+    "transition-all duration-150 rounded-lg",
+    size === "sm" && "px-3 py-2 text-lg",
+    size === "base" && "px-4 py-2 text-xl",
+    variant === "underline" &&
+      "border-[1px] hover:border-gray-500 border-gray-transparent",
+    variant === "base" && "bg-black text-white",
+  ]}
+  href={href}
+  target={target}
+  rel={rel}><slot /></a
+>
