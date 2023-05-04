@@ -1,0 +1,9 @@
+{
+  "name": "deck-of-cards",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "dependencies": {
+    "tsconfig": "workspace:*"
+  }
+}

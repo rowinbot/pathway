@@ -1,0 +1,9 @@
+{
+  "display": "Astro",
+  "extends": ["../base/tsconfig.json", "astro/tsconfigs/strict"],
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "allowImportingTsExtensions": true
+  }
+}

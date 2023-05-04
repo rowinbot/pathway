@@ -1,5 +1,4 @@
 {
-  "name": "pathway",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -8,8 +7,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-custom": "workspace:*",
     "prettier": "^2.5.1",
-    "turbo": "^1.9.3"
+    "turbo": "latest"
   },
-  "packageManager": "pnpm@7.15.0"
+  "packageManager": "pnpm@7.15.0",
+  "name": "my-turborepo"
 }

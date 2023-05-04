@@ -1,0 +1,21 @@
+---
+import Game from "../../features/game/game.svelte";
+import Layout from "../../layouts/base-layout.astro";
+import invariant from "tiny-invariant";
+
+const { gameId } = Astro.params;
+
+invariant(gameId, "Game ID is required");
+---
+
+<Layout title={gameId + " | Pathway"}>
+  <main class="py-8 flex flex-col">
+    <div class="mx-auto max-w-xl space-y-8">
+      <header class="space-y-4">
+        <h1 class="font-base text-5xl">Pathway</h1>
+      </header>
+    </div>
+
+    <Game client:load gameId={gameId} />
+  </main>
+</Layout>
