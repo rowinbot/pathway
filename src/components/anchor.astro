@@ -18,12 +18,12 @@ const {
 
 <a
   class:list={[
-    "transition-all duration-150 rounded-lg",
-    size === "sm" && "px-3 py-2 text-lg",
-    size === "base" && "px-4 py-2 text-xl",
+    "transition-all duration-150 rounded-lg uppercase",
+    size === "sm" && "px-3 py-2 text-sm",
+    size === "base" && "px-4 py-2 text-base",
     variant === "underline" &&
       "border-[1px] hover:border-gray-500 border-gray-transparent",
-    variant === "base" && "bg-black text-white",
+    variant === "base" && "bg-black text-white border-[1px] border-black",
   ]}
   href={href}
   target={target}

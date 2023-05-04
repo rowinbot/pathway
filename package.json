@@ -15,6 +15,7 @@
     "@astrojs/solid-js": "^2.1.0",
     "@astrojs/svelte": "^2.1.0",
     "@fontsource/assistant": "^4.5.12",
+    "@solid-primitives/input-mask": "^0.1.7",
     "@webcomponents/template-shadowroot": "^0.2.1",
     "astro": "^2.3.4",
     "autoprefixer": "^10.4.14",
