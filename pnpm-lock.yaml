@@ -4,6 +4,9 @@ importers:
 
   .:
     devDependencies:
+      dotenv-cli:
+        specifier: ^7.2.1
+        version: 7.2.1
       prettier:
         specifier: ^2.5.1
         version: 2.8.7
@@ -22,6 +25,9 @@ importers:
       '@nestjs/platform-express':
         specifier: ^9.0.0
         version: 9.0.0(@nestjs/common@9.0.0)(@nestjs/core@9.0.0)
+      game-logic:
+        specifier: workspace:*
+        version: link:../../packages/game-logic
       reflect-metadata:
         specifier: ^0.1.13
         version: 0.1.13
@@ -93,7 +99,7 @@ importers:
         specifier: 4.2.0
         version: 4.2.0
       typescript:
-        specifier: ^4.7.4
+        specifier: ^4.9.5
         version: 4.9.5
 
   apps/web:
@@ -125,9 +131,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.23)
-      deck-of-cards:
+      game-logic:
         specifier: workspace:*
-        version: link:../../packages/deck-of-cards
+        version: link:../../packages/game-logic
       solid-js:
         specifier: ^1.7.3
         version: 1.7.3
@@ -154,7 +160,7 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0
 
-  packages/deck-of-cards:
+  packages/game-logic:
     dependencies:
       tsconfig:
         specifier: workspace:*
@@ -3010,6 +3016,26 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       esutils: 2.0.3
+    dev: true
+
+  /dotenv-cli@7.2.1:
+    resolution: {integrity: sha512-ODHbGTskqRtXAzZapDPvgNuDVQApu4oKX8lZW7Y0+9hKA6le1ZJlyRS687oU9FXjOVEDU/VFV6zI125HzhM1UQ==}
+    hasBin: true
+    dependencies:
+      cross-spawn: 7.0.3
+      dotenv: 16.0.3
+      dotenv-expand: 10.0.0
+      minimist: 1.2.8
+    dev: true
+
+  /dotenv-expand@10.0.0:
+    resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
+    engines: {node: '>=12'}
+    dev: true
+
+  /dotenv@16.0.3:
+    resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
+    engines: {node: '>=12'}
     dev: true
 
   /dset@3.1.2:

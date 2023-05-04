@@ -1,6 +1,6 @@
 <script lang="ts">
   import Card from "./card.svelte";
-  import { fullDeckRows, isEmptyCard } from "deck-of-cards";
+  import { fullDeckRows, isEmptyCard } from "game-logic";
   import CardContainer from "./cards/card-container.svelte";
   import Coin from "./cards/coin.svelte";
 </script>

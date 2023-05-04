@@ -1,3 +1,5 @@
+import { TupleMatrix } from "./types";
+
 export enum BlackCardKind {
   Spades = "spades",
   Clover = "clover",
@@ -7,12 +9,6 @@ export enum RedCardKind {
   Hearts = "hearts",
   Diamonds = "diamonds",
 }
-
-type CardMatrix<T, N extends number, A extends any[] = []> = A extends {
-  length: N;
-}
-  ? A
-  : CardMatrix<T, N, [...A, T]>;
 
 type CardKind = BlackCardKind | RedCardKind;
 
@@ -77,8 +73,8 @@ export const isEmptyCard = (
 ): card is typeof EmptyCard => typeof card === "symbol";
 
 // row-first cards matrix 10x10
-export const fullDeckRows: CardMatrix<
-  CardMatrix<Card | typeof EmptyCard, 10>,
+export const fullDeckRows: TupleMatrix<
+  TupleMatrix<Card | typeof EmptyCard, 10>,
   10
 > = [
   [

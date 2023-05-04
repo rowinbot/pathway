@@ -5,7 +5,7 @@
     RedCardKind,
     cardKind,
     cardNumber,
-  } from "deck-of-cards";
+  } from "game-logic";
   import CardContainer from "./cards/card-container.svelte";
   import Clover from "./cards/clover.svelte";
   import Diamond from "./cards/diamond.svelte";

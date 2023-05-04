@@ -2,15 +2,16 @@
   "name": "pathway",
   "private": true,
   "scripts": {
-    "start": "turbo run start",
-    "build": "turbo run build",
-    "dev": "turbo run dev",
+    "start": "dotenv -- turbo run start",
+    "build": "dotenv -- turbo run build",
+    "dev": "dotenv -- turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
     "prettier": "^2.5.1",
-    "turbo": "^1.9.3"
+    "turbo": "^1.9.3",
+    "dotenv-cli": "^7.2.1"
   },
   "packageManager": "pnpm@7.15.0"
 }
