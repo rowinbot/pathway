@@ -1,12 +1,13 @@
 {
-  "name": "pathway",
+  "name": "pathway-web",
   "type": "module",
   "version": "0.0.1",
+  "private": true,
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "lint": "prettier ."
+    "format": "prettier ."
   },
   "dependencies": {
     "@astrojs/lit": "^2.0.1",

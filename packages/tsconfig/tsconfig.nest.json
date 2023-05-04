@@ -1,0 +1,15 @@
+{
+  "extends": "tsconfig/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2019",
+    "sourceMap": true,
+    "incremental": true,
+    "skipLibCheck": true
+  }
+}
