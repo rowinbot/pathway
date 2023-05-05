@@ -1,81 +1,45 @@
-# Turborepo starter
+# The Pathway Game
 
-This is an official starter Turborepo.
+> POSTMORTEM: The idea to try-out Astro along with Svelte and Nest with a monorepo was a Solid one (pun intended) but turns out Nest.js doesn't support ESM modules in a simple way, one would've to do too many tricks to make it work they way I wanted. So I've decided to go with Next.js (App Router) and test it out.
 
-## Using this example
+This is The Pathway Game (a spin-off of Sequence), written in Astro mainly (The Glue®) with the logic components behind the game written in Svelte and the lobby components written in Solid.
 
-Run the following command:
+## 🙋‍♀️ Why three frameworks?
 
-```sh
-npx create-turbo@latest
+Just because. Good timing and good technologies. Can they really work **well** together? I'm set to figure it out!
+
+## 🚀 Project Structure
+
+```plaintext
+/
+├── public/
+│   ├── Public files
+├── src/
+│   ├── game/
+│   │   └── Game files (Svelte)
+│   ├── lobby/
+│   │   └── Lobby files (Solid)
+│   └── pages/
+│       └── Routes, entry points (Astro)
+├── layouts/
+    └── Layouts for the routes (Astro)
 ```
 
-## What's inside?
+Any static assets, like images, can be placed in the `public/` directory.
 
-This Turborepo includes the following packages/apps:
+## 🧞 Commands
 
-### Apps and Packages
+All commands are run from the root of the project, from a terminal:
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `ui`: a stub React component library shared by both `web` and `docs` applications
-- `eslint-config-custom`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `tsconfig`: `tsconfig.json`s used throughout the monorepo
+| Command                | Action                                           |
+| :--------------------- | :----------------------------------------------- |
+| `npm install`          | Installs dependencies                            |
+| `npm run dev`          | Starts local dev server at `localhost:3000`      |
+| `npm run build`        | Build your production site to `./dist/`          |
+| `npm run preview`      | Preview your build locally, before deploying     |
+| `npm run astro ...`    | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro --help` | Get help using the Astro CLI                     |
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## 👀 Want to learn more?
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+Feel free to check [Astro's documentation](https://docs.astro.build).
