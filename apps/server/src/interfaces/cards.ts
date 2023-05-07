@@ -1,3 +1,1 @@
-import { Card } from "game-logic";
-
-export type { Card };
+export type { Card } from "game-logic";

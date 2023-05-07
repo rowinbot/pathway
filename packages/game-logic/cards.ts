@@ -73,7 +73,7 @@ export const isEmptyCard = (
 ): card is typeof EmptyCard => typeof card === "symbol";
 
 // row-first cards matrix 10x10
-export const fullDeckRows: TupleMatrix<
+export const staticBoardRows: TupleMatrix<
   TupleMatrix<Card | typeof EmptyCard, 10>,
   10
 > = [

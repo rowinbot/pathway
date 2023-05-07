@@ -11,8 +11,10 @@
   import Diamond from "./cards/diamond.svelte";
   import Heart from "./cards/heart.svelte";
   import Spade from "./cards/spade.svelte";
+  import Coin from "./cards/coin.svelte";
 
   export let card: Card;
+  export let occupied: boolean;
 
   const cardColor = (card: Card) => {
     switch (card.kind) {
@@ -35,7 +37,7 @@
   const blackColor = "#222222";
 </script>
 
-<CardContainer>
+<CardContainer {occupied}>
   <g
     style="transform: translateX(calc({width - marginX}px)) translateY({height -
       marginY}px)"
@@ -61,5 +63,9 @@
     <Clover color={cardColor(card)} />
   {:else if cardKind(card) === BlackCardKind.Spades}
     <Spade color={cardColor(card)} />
+  {/if}
+
+  {#if occupied}
+    <Coin color={"#06f"} />
   {/if}
 </CardContainer>

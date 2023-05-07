@@ -1,4 +1,2 @@
-export interface Match {
-  code: string;
-  players: string[];
-}
+export type { Match, MatchPlayer } from "game-logic";
+export { MatchJoinStatus } from "game-logic";

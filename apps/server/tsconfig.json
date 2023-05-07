@@ -1,18 +1,14 @@
 {
-  "extends": "tsconfig/tsconfig.nest.json",
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"],
   "compilerOptions": {
+    "lib": ["ES2015"],
+    "module": "CommonJS",
     "outDir": "./dist",
-    "baseUrl": "./",
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ES2019",
-    "sourceMap": true,
-    "incremental": true,
-    "skipLibCheck": true
-  }
+    "rootDir": "./src",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["node_modules"],
+  "extends": "tsconfig/tsconfig.base.json",
+  "include": ["src"]
 }
