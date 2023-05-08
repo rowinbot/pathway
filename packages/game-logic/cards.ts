@@ -23,7 +23,8 @@ export enum CardNumber {
   Nine = "9",
   Ten = "10",
   Ace = "A",
-  Jack = "J",
+  SingleJack = "SJ",
+  DoubleJack = "DJ",
   Queen = "Q",
   King = "K",
 }
@@ -148,7 +149,7 @@ export const staticBoardRows: TupleMatrix<
     card(BlackCardKind.Clover, CardNumber.Seven),
     card(BlackCardKind.Spades, CardNumber.Queen),
     card(BlackCardKind.Clover, CardNumber.Eight),
-  ], 
+  ],
   [
     card(BlackCardKind.Spades, CardNumber.King),
     card(RedCardKind.Hearts, CardNumber.Eight),
@@ -198,4 +199,21 @@ export const staticBoardRows: TupleMatrix<
     EmptyCard,
   ],
 ];
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
+export function getCards(): Card[] {
+  const cards = [];
+
+  for (const kind of Object.values(RedCardKind)) {
+    for (const number of Object.values(CardNumber)) {
+      cards.push(card(kind, number));
+    }
+  }
+
+  for (const kind of Object.values(BlackCardKind)) {
+    for (const number of Object.values(CardNumber)) {
+      cards.push(card(kind, number));
+    }
+  }
+
+  return cards;
+}

@@ -10,12 +10,8 @@ invariant(gameId, "Game ID is required");
 
 <Layout title={gameId + " | Pathway"}>
   <main class="py-8 flex flex-col">
-    <div class="mx-auto max-w-xl space-y-8">
-      <header class="space-y-4">
-        <h1 class="font-base text-5xl">Pathway</h1>
-      </header>
+    <div class="max-w-7xl w-full px-8 mx-auto">
+      <Game client:load gameId={gameId} />
     </div>
-
-    <Game client:load gameId={gameId} />
   </main>
 </Layout>

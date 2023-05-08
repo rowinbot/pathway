@@ -4,6 +4,7 @@ import {
   getMatchByCode,
   getMatchPlayer,
   joinMatch,
+  newMatchPlayerObj,
 } from "@/services/match.service";
 import { Router } from "express";
 import { MatchJoinStatus } from "game-logic";
@@ -23,7 +24,7 @@ router.use(function (req, res, next) {
 
 router.put("/create", function (req, res) {
   const player = getCurrentPlayer(req, res)!;
-  const matchPlayer = { ...player, isOwner: true };
+  const matchPlayer = newMatchPlayerObj(player);
   const match = createMatch(matchPlayer);
 
   res.status(201).json(match);

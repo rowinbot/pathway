@@ -1,23 +1,46 @@
 import { getCurrentPlayer } from "@/helpers/player.helpers";
-import { getMatchByCode, joinMatch } from "@/services/match.service";
+import {
+  getMatchByCode,
+  getMatchPlayer,
+  joinMatch,
+  nextMatchTurn,
+  startMatch,
+  testAndApplyMatchPlayerMovement,
+  updateMatchPlayerConnected,
+} from "@/services/match.service";
 import { getSingleHeaderValue } from "@/utils/misc";
-import { MatchJoinStatus, staticBoardRows } from "game-logic";
+import { Match, MatchJoinStatus, MatchPlayer, Player } from "game-logic";
 import type { Server as HttpServer } from "http";
-import { Server } from "socket.io";
-import type {
+import { Server, Socket } from "socket.io";
+import {
+  type ClientToServerEvents,
+  type ServerToClientEvents,
+  type InterServerEvents,
+  type SocketData,
+  ClientToServerEvent,
+  ServerToClientEvent,
+} from "game-logic/realtime";
+
+type AppServer = Server<
   ClientToServerEvents,
   ServerToClientEvents,
   InterServerEvents,
-  SocketData,
-} from "game-logic/realtime";
+  SocketData
+>;
 
+type AppSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
+/**
+ * Sets up the game Socket.io server and the match join logic.
+ * Everything else is hooked up here but must be implemented/abstracted away from here.
+ */
 export function createGameSocket(httpServer: HttpServer) {
-  const io = new Server<
-    ClientToServerEvents,
-    ServerToClientEvents,
-    InterServerEvents,
-    SocketData
-  >(httpServer, {
+  const io: AppServer = new Server(httpServer, {
     cors: {
       origin: "http://localhost:3000",
     },
@@ -44,32 +67,103 @@ export function createGameSocket(httpServer: HttpServer) {
     const match = getMatchByCode(matchCode);
     const matchJoinStatus = joinMatch(matchCode, player);
 
-    if (matchJoinStatus === MatchJoinStatus.SUCCESS) {
-      socket.join(matchCode);
+    // Let the client know the match join status.
+    socket.emit(ServerToClientEvent.MATCH_JOIN, matchJoinStatus);
+
+    if (!match || matchJoinStatus !== MatchJoinStatus.SUCCESS) {
+      return socket.disconnect();
     }
 
-    socket.on("movement", (movement) => {
-      const cardAtPos = staticBoardRows[movement.row][movement.col];
-      const isValidCardForPos = cardAtPos === movement.card;
-      const positionIsFree = true;
+    const matchPlayer = getMatchPlayer(matchCode, player.id)!;
 
-      return {
-        success: isValidCardForPos && positionIsFree,
-      };
+    // Join the room for this match.
+    socket.join(matchCode);
+
+    onPlayerConnected(match, matchPlayer, socket, io);
+    setupClientToServerEvents(match, matchPlayer, socket, io);
+  });
+}
+
+function onPlayerConnected(
+  match: Match,
+  player: MatchPlayer,
+  socket: AppSocket,
+  io: AppServer
+) {
+  // If match already started, send the board state (could be a re-join).
+  if (match.started && match.matchState) {
+    socket.emit(
+      ServerToClientEvent.MATCH_STATE,
+      match.matchState.boardState,
+      match.matchState.playerHands[player.id]
+    );
+  }
+
+  updateMatchPlayerConnected(match.code, player.id, true);
+  io.to(match.code).emit(
+    ServerToClientEvent.MATCH_PLAYERS_UPDATED,
+    match.players
+  );
+
+  socket.on("disconnecting", () => {
+    updateMatchPlayerConnected(match.code, player.id, false);
+    io.to(match.code).emit(
+      ServerToClientEvent.MATCH_PLAYERS_UPDATED,
+      match.players
+    );
+  });
+}
+
+function setupClientToServerEvents(
+  match: Match,
+  player: MatchPlayer,
+  socket: AppSocket,
+  io: AppServer
+) {
+  socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
+    const [isMovementValid, nextCard] = testAndApplyMatchPlayerMovement(
+      match.code,
+      player.id,
+      movement
+    );
+
+    if (isMovementValid) {
+      const nextTurn = nextMatchTurn(match.code);
+
+      io.to(match.code).emit(
+        ServerToClientEvent.PLAYER_MOVEMENT,
+        {
+          ...movement,
+          team: player.team,
+        },
+        nextTurn
+      );
+    }
+
+    callback({
+      success: isMovementValid,
+      nextCard,
     });
   });
 
-  setInterval(() => {
-    console.log("Moving");
+  socket.on(ClientToServerEvent.START_GAME, (callback) => {
+    let didStart = false;
+    console.log("asdasd");
 
-    io /*.to(matchCode)*/.emit("playerMovement", {
-      playerId: "Yejeguan",
-      action: "add",
-      card: staticBoardRows[Math.floor(Math.random() * 10)][
-        Math.floor(Math.random() * 10)
-      ] as any,
-      row: Math.floor(Math.random() * 10),
-      col: Math.floor(Math.random() * 10),
-    });
-  }, 500);
+    if (player.id !== match.owner.id) return callback(didStart);
+
+    startMatch(match.code);
+
+    if (!!match.matchState) {
+      didStart = true;
+
+      io.to(match.code).emit(
+        ServerToClientEvent.MATCH_STATE,
+        match.matchState.boardState,
+        match.matchState.playerHands[player.id]
+      );
+    }
+
+    callback(didStart);
+  });
 }

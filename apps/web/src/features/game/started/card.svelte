@@ -5,6 +5,7 @@
     RedCardKind,
     cardKind,
     cardNumber,
+    MatchTeamI,
   } from "game-logic";
   import CardContainer from "./cards/card-container.svelte";
   import Clover from "./cards/clover.svelte";
@@ -12,9 +13,16 @@
   import Heart from "./cards/heart.svelte";
   import Spade from "./cards/spade.svelte";
   import Coin from "./cards/coin.svelte";
+  import { createEventDispatcher } from "svelte";
 
   export let card: Card;
-  export let occupied: boolean;
+  export let row: number;
+  export let col: number;
+  export let occupiedByTeam: MatchTeamI | null;
+
+  const dispatch = createEventDispatcher<{
+    "place-card": { card: Card; row: number; col: number };
+  }>();
 
   const cardColor = (card: Card) => {
     switch (card.kind) {
@@ -35,9 +43,41 @@
 
   const redColor = "#F24E1E";
   const blackColor = "#222222";
+
+  function onPlaceCard() {
+    dispatch("place-card", { card, row, col });
+  }
+
+  function highlightColor(team: MatchTeamI | null) {
+    switch (team) {
+      case MatchTeamI.One:
+        return "#fff5f5";
+      case MatchTeamI.Two:
+        return "#f5f5ff";
+      case MatchTeamI.Three:
+        return "#f5fff5";
+      default:
+        return "#fff";
+    }
+  }
+
+  function tokenColor(team: MatchTeamI) {
+    switch (team) {
+      case MatchTeamI.One:
+        return "#f00";
+      case MatchTeamI.Two:
+        return "#00f";
+      case MatchTeamI.Three:
+        return "#0f0";
+    }
+  }
 </script>
 
-<CardContainer {occupied}>
+<CardContainer
+  bgColor={highlightColor(occupiedByTeam)}
+  on:click={onPlaceCard}
+  on:keydown={onPlaceCard}
+>
   <g
     style="transform: translateX(calc({width - marginX}px)) translateY({height -
       marginY}px)"
@@ -65,7 +105,7 @@
     <Spade color={cardColor(card)} />
   {/if}
 
-  {#if occupied}
-    <Coin color={"#06f"} />
+  {#if occupiedByTeam !== null}
+    <Coin color={tokenColor(occupiedByTeam)} />
   {/if}
 </CardContainer>

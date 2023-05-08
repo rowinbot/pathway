@@ -9,7 +9,7 @@ import {
 
 const idToPlayer = {} as Record<string, Player>;
 
-export const createPlayer = (nickname?: string) => {
+export function createPlayer(nickname?: string) {
   const id = uuid();
 
   const player = {
@@ -20,15 +20,15 @@ export const createPlayer = (nickname?: string) => {
   idToPlayer[id] = player;
 
   return player;
-};
+}
 
-export const playerExists = (id: string) => {
+export function playerExists(id: string) {
   return id in idToPlayer;
-};
+}
 
-export const getPlayer = (id: string) => {
+export function getPlayer(id: string) {
   return playerExists(id) ? idToPlayer[id] : null;
-};
+}
 
 // Utilities below 👇
 

@@ -6,7 +6,7 @@ const PLAYER_ID_LOCAL_STORAGE_KEY = "playerId";
 /**
  * Loads the player information from the server.
  */
-export async function loadPlayer(): Promise<Player | null> {
+export async function loadPlayer(): Promise<Player> {
   const { status, data } = await ClientAPI.get<Player>(`/player/info`, {
     headers: {
       "x-player-id": localStorage.getItem(PLAYER_ID_LOCAL_STORAGE_KEY),
@@ -14,7 +14,7 @@ export async function loadPlayer(): Promise<Player | null> {
   });
 
   if (status !== 200 && status !== 201) {
-    return null;
+    throw new Error("Failed to load player");
   }
 
   const player = data;
