@@ -14,7 +14,7 @@
 
   <ul class="grid grid-cols-10 gap-2">
     {#each playerHand.cards as card (card.uid)}
-      <li animate:flip in:fly={{ y: -100 }} out:fly={{ y: 100 }}>
+      <li animate:flip in:fly={{ y: -5 }} out:fly={{ y: 100 }}>
         <Card {card} row={0} col={0} occupiedByTeam={null} />
       </li>
     {/each}
