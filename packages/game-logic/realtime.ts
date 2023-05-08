@@ -12,12 +12,25 @@ import {
 } from "./match";
 import { Player } from "./player";
 
+/**
+ * Private response to a player movement.
+ * Contains sensitive information about a player's hand (`nextCard`).
+ */
 export interface MovementResponse {
   success: boolean;
+
+  /**
+   * The card that was attempted to be placed on the board.
+   */
+  card: Card | null;
   nextCard: Card | null;
 }
 
 export interface LastMovement extends Movement {
+  /**
+   * The card that was placed on the board.
+   */
+  card: Card;
   team: MatchTeamI;
 }
 
@@ -94,11 +107,10 @@ export interface SocketData {
   /**
    * A player _can_ be in only one match at a time.
    */
-  match: Match;
-  matchPlayer: MatchPlayer;
+  matchCode: string | null;
 
   /**
    * Static information about the player. Is maintained across matches.
    */
-  player: Player;
+  playerId: string;
 }

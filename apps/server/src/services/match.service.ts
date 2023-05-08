@@ -4,7 +4,7 @@ import {
   type Player,
   type MatchPlayerHand,
   buildBoard,
-  testMovementWithMatchPlayerHand,
+  getMatchPlayerCardIndexForPositionInBoard,
   CardNumber,
   DEFAULT_ROOM_CONFIG,
   getNextMatchTurnPlayerId,
@@ -36,44 +36,59 @@ export function testAndApplyMatchPlayerMovement(
   matchCode: string,
   playerId: string,
   movement: Movement
-): [boolean, Card | null] {
-  let nextCard: Card | null = null;
-
+): {
+  isMovementValid: boolean;
+  card: Card | null;
+  nextCard: Card | null;
+} {
   const matchState = getMatchByCode(matchCode)?.matchState;
-  if (!matchState) return [false, nextCard];
+  if (!matchState)
+    return {
+      isMovementValid: false,
+      card: null,
+      nextCard: null,
+    };
 
-  const isMovementValid = testMovementWithMatchPlayerHand(
+  const matchPlayer = getMatchPlayer(matchCode, playerId)!;
+  const playerHand = matchState.playerHands[playerId];
+
+  const matchingCardI = getMatchPlayerCardIndexForPositionInBoard(
     matchState.boardState,
-    matchState.playerHands[playerId],
-    movement.card,
+    matchPlayer.team,
+    playerHand,
     movement.row,
     movement.col
   );
 
-  if (!isMovementValid) return [false, nextCard];
+  if (matchingCardI === null)
+    // Invalid movement
+    return {
+      isMovementValid: false,
+      card: null,
+      nextCard: null,
+    };
 
-  const matchPlayer = getMatchPlayer(matchCode, playerId)!;
+  const card = playerHand.cards[matchingCardI];
 
   // Remove card from player's hand
-  const playerHand = matchState.playerHands[playerId];
-  playerHand.cards = playerHand.cards.filter(
-    (card) => card.id !== movement.card.id
-  );
+  playerHand.cards.splice(matchingCardI, 1);
 
   // Add another card to player's hand
-  if (matchState.cardsDeck.length > 0) {
-    let nextCard = matchState.cardsDeck.pop()!;
+  const nextCard = matchState.cardsDeck.pop() ?? null;
 
-    if (nextCard) {
-      playerHand.cards.push(nextCard);
-    }
+  if (nextCard) {
+    playerHand.cards.push(nextCard);
   }
 
   // Add card to board
   matchState.boardState[movement.row][movement.col] =
-    movement.card.number === CardNumber.SingleJack ? null : matchPlayer.team;
+    card.number === CardNumber.SingleJack ? null : matchPlayer.team;
 
-  return [true, nextCard];
+  return {
+    isMovementValid: true,
+    card,
+    nextCard,
+  };
 }
 
 export function nextMatchTurn(code: string) {
@@ -116,6 +131,8 @@ export function startMatch(matchCode: string): boolean {
     for (let i = 0; i < CARDS_PER_PLAYER; i++) {
       cards.push(cardsDeck.pop()!);
     }
+
+    console.log(player.id, cardsDeck[cardsDeck.length - 1]);
 
     playersHands[player.id] = {
       cards,

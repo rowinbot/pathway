@@ -1,6 +1,6 @@
 <script lang="ts">
   const width = 240;
-  const height = 336 / 1.6;
+  const height = 336 / 1.7;
 
   export let bgColor: string = "#fff";
 </script>
@@ -9,7 +9,7 @@
   width="100%"
   viewBox="0 0 {width} {height}"
   fill="none"
-  class="text-5xl rounded-lg shadow-md"
+  class="text-5xl rounded-lg border-[1px] border-gray-200"
   xmlns="http://www.w3.org/2000/svg"
   on:click
   on:keydown

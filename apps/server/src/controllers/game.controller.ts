@@ -105,6 +105,11 @@ function onPlayerConnected(
     match.players
   );
 
+  socket.data = {
+    matchCode: match.code,
+    playerId: player.id,
+  };
+
   socket.on("disconnecting", () => {
     updateMatchPlayerConnected(match.code, player.id, false);
     io.to(match.code).emit(
@@ -121,19 +126,20 @@ function setupClientToServerEvents(
   io: AppServer
 ) {
   socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
-    const [isMovementValid, nextCard] = testAndApplyMatchPlayerMovement(
+    const { isMovementValid, card, nextCard } = testAndApplyMatchPlayerMovement(
       match.code,
       player.id,
       movement
     );
 
-    if (isMovementValid) {
+    if (isMovementValid && card) {
       const nextTurn = nextMatchTurn(match.code);
 
       io.to(match.code).emit(
         ServerToClientEvent.PLAYER_MOVEMENT,
         {
           ...movement,
+          card,
           team: player.team,
         },
         nextTurn
@@ -142,26 +148,31 @@ function setupClientToServerEvents(
 
     callback({
       success: isMovementValid,
+      card,
       nextCard,
     });
   });
 
-  socket.on(ClientToServerEvent.START_GAME, (callback) => {
+  socket.on(ClientToServerEvent.START_GAME, async (callback) => {
     let didStart = false;
-    console.log("asdasd");
 
     if (player.id !== match.owner.id) return callback(didStart);
 
     startMatch(match.code);
 
-    if (!!match.matchState) {
+    const matchState = match.matchState;
+    if (!!matchState) {
       didStart = true;
 
-      io.to(match.code).emit(
-        ServerToClientEvent.MATCH_STATE,
-        match.matchState.boardState,
-        match.matchState.playerHands[player.id]
-      );
+      const sockets = await io.in(match.code).fetchSockets();
+
+      sockets.forEach((neighbouringSocket) => {
+        neighbouringSocket.emit(
+          ServerToClientEvent.MATCH_STATE,
+          matchState.boardState,
+          matchState.playerHands[neighbouringSocket.data.playerId]
+        );
+      });
     }
 
     callback(didStart);

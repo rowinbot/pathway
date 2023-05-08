@@ -138,6 +138,13 @@ importers:
       tsconfig:
         specifier: workspace:*
         version: link:../tsconfig
+      uuid:
+        specifier: ^9.0.0
+        version: 9.0.0
+    devDependencies:
+      '@types/uuid':
+        specifier: ^9.0.1
+        version: 9.0.1
 
   packages/tsconfig: {}
 

@@ -12,8 +12,8 @@
   import Diamond from "./cards/diamond.svelte";
   import Heart from "./cards/heart.svelte";
   import Spade from "./cards/spade.svelte";
-  import Coin from "./cards/coin.svelte";
   import { createEventDispatcher } from "svelte";
+  import PlayerCoin from "./cards/player-coin.svelte";
 
   export let card: Card;
   export let row: number;
@@ -38,10 +38,10 @@
   const width = 240;
   const height = 336;
 
-  const marginX = 30;
+  const marginX = 15;
   const marginY = 20;
 
-  const redColor = "#F24E1E";
+  const redColor = "#FF0000";
   const blackColor = "#222222";
 
   function onPlaceCard() {
@@ -51,11 +51,11 @@
   function highlightColor(team: MatchTeamI | null) {
     switch (team) {
       case MatchTeamI.One:
-        return "#fff5f5";
+        return "#fff";
       case MatchTeamI.Two:
-        return "#f5f5ff";
+        return "#fff";
       case MatchTeamI.Three:
-        return "#f5fff5";
+        return "#fff";
       default:
         return "#fff";
     }
@@ -64,7 +64,7 @@
   function tokenColor(team: MatchTeamI) {
     switch (team) {
       case MatchTeamI.One:
-        return "#f00";
+        return "#f80";
       case MatchTeamI.Two:
         return "#00f";
       case MatchTeamI.Three:
@@ -79,19 +79,23 @@
   on:keydown={onPlaceCard}
 >
   <g
-    style="transform: translateX(calc({width - marginX}px)) translateY({height -
-      marginY}px)"
+    style="transform: translateX(calc({marginX}px)) translateY(calc({marginY}px - 0.25em))"
   >
-    <text text-anchor="middle" class="font-mono" fill={blackColor}
+    <text text-anchor="start" class="font-mono" fill={blackColor} dy="1em"
       >{cardNumber(card)}</text
     >
   </g>
 
   <g
-    style="transform: translateX(calc({marginX}px)) translateY(calc({marginY}px - 0.25em))"
+    style="transform: translateX(calc({width - marginX}px)) translateY({height -
+      marginY}px)"
   >
-    <text text-anchor="middle" class="font-mono" fill={blackColor} dy="1em"
-      >{cardNumber(card)}</text
+    <text
+      style="transform: scaleX(-1) scaleY(-1)"
+      text-anchor="start"
+      class="font-mono"
+      fill={blackColor}
+      dy="0.75em">{cardNumber(card)}</text
     >
   </g>
 
@@ -106,6 +110,6 @@
   {/if}
 
   {#if occupiedByTeam !== null}
-    <Coin color={tokenColor(occupiedByTeam)} />
+    <PlayerCoin color={tokenColor(occupiedByTeam)} />
   {/if}
 </CardContainer>

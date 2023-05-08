@@ -5,6 +5,10 @@
   "type": "module",
   "main": "./index.ts",
   "dependencies": {
-    "tsconfig": "workspace:*"
+    "tsconfig": "workspace:*",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.1"
   }
 }

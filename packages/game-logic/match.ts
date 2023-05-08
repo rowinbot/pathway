@@ -9,6 +9,7 @@ import {
   staticBoardRows,
 } from "./cards";
 import { Player } from "./player";
+import { TupleMatrix } from "./types";
 
 export interface Match {
   code: string;
@@ -86,7 +87,6 @@ export enum MatchJoinStatus {
 
 export interface Movement {
   playerId: string;
-  card: Card;
   row: number;
   col: number;
 }
@@ -111,37 +111,76 @@ export function isMatchCodeValid(code: string): boolean {
   return MATCH_CODE_REGEX.test(code);
 }
 
-export function testMovementWithMatchPlayerHand(
-  boardState: BoardState,
+export function getMatchingPlayerHandCardIndexForCard(
   playerHand: MatchPlayerHand,
-  card: Card,
-  col: number,
-  row: number
-): boolean {
+  matchingCard: Card
+): number[] {
+  let compatibleCardsIndexes: number[] = [];
+
+  for (let i = 0; i < playerHand.cards.length; i++) {
+    const card = playerHand.cards[i];
+
+    if (card.id === matchingCard.id) {
+      compatibleCardsIndexes.push(i);
+    }
+
+    if (card.number === CardNumber.SingleJack) compatibleCardsIndexes.push(i);
+
+    if (card.number === CardNumber.DoubleJack) compatibleCardsIndexes.push(i);
+  }
+
+  return compatibleCardsIndexes;
+}
+
+export function getMatchPlayerCardIndexForPositionInBoard(
+  boardState: BoardState,
+  playerTeam: MatchTeamI,
+  playerHand: MatchPlayerHand,
+  row: number,
+  col: number
+): number | null {
   const cardAtPos = staticBoardRows[row][col];
   const isEmptyCard = typeof cardAtPos === "symbol";
 
   // Ignore movements to blank cards - blank corners
-  if (isEmptyCard) return false;
+  if (isEmptyCard) return null;
 
-  const playerHasCard = playerHand.cards.some((card) => card.id === card.id);
+  const compatibleCardsIndexes = getMatchingPlayerHandCardIndexForCard(
+    playerHand,
+    cardAtPos
+  );
 
-  // If player doesn't have the card being played, ignore the movement
-  if (!playerHasCard) return false;
+  if (compatibleCardsIndexes.length === 0) return null;
 
-  // The card being played is the same as the one in the position and the position is free
-  const isValidCardForPos =
-    cardAtPos.id === card.id && boardState[row][col] === null;
+  const positionState = boardState[row][col];
+  const isPositionFree = positionState === null;
+  const isPositionOccupiedByPlayerTeam = positionState === playerTeam;
 
-  // There's NOT a card in the position and DoubleJack (wildcard) is being played
-  const isDoubleJackAndValid =
-    cardAtPos.number === CardNumber.DoubleJack && boardState[row][col] === null;
+  // Jokers
+  let compatibleJokerI: number | null = null;
 
-  // There IS a card in the position and SingleJack (remove wildcard) is being played
-  const isSingleJackAndValid =
-    cardAtPos.number === CardNumber.SingleJack && boardState[row][col] !== null;
+  for (const i of compatibleCardsIndexes) {
+    const playerCard = playerHand.cards[i];
 
-  return isValidCardForPos || isDoubleJackAndValid || isSingleJackAndValid;
+    // If player has a card that matches the position and the position is free, pick it.
+    if (cardAtPos.id === playerCard.id && isPositionFree) {
+      return i;
+    }
+
+    // Otherwise, store the index of any joker card that matches the position to return it later.
+    // But we'll still continue to loop to check for a direct card match.
+    else if (playerCard.number === CardNumber.DoubleJack && isPositionFree) {
+      compatibleJokerI = i;
+    } else if (
+      playerCard.number === CardNumber.SingleJack &&
+      !isPositionFree &&
+      !isPositionOccupiedByPlayerTeam
+    ) {
+      compatibleJokerI = i;
+    }
+  }
+
+  return compatibleJokerI;
 }
 
 export function getNextMatchTurnPlayerId(

@@ -1,4 +1,5 @@
 import { TupleMatrix } from "./types";
+import { v4 as uuid } from "uuid";
 
 export enum BlackCardKind {
   Spades = "spades",
@@ -31,6 +32,11 @@ export enum CardNumber {
 
 export type Card = {
   id: string;
+
+  /**
+   * Always unique id, even if card is exactly the same
+   */
+  uid: string;
   kind: CardKind;
   number: CardNumber;
   color: "red" | "black";
@@ -45,6 +51,7 @@ export const cardColor = (card: Card) => card.color;
 export function redCard(kind: RedCardKind, number: CardNumber) {
   return {
     id: cardId(kind, number),
+    uid: uuid(),
     kind,
     number,
     color: "red",
@@ -54,6 +61,7 @@ export function redCard(kind: RedCardKind, number: CardNumber) {
 export function blackCard(kind: BlackCardKind, number: CardNumber) {
   return {
     id: cardId(kind, number),
+    uid: uuid(),
     kind,
     number,
     color: "black",
@@ -148,7 +156,7 @@ export const staticBoardRows: TupleMatrix<
     card(RedCardKind.Hearts, CardNumber.Six),
     card(BlackCardKind.Clover, CardNumber.Seven),
     card(BlackCardKind.Spades, CardNumber.Queen),
-    card(BlackCardKind.Clover, CardNumber.Eight),
+    card(BlackCardKind.Clover, CardNumber.Nine),
   ],
   [
     card(BlackCardKind.Spades, CardNumber.King),

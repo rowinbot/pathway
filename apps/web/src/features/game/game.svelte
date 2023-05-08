@@ -84,22 +84,18 @@
     }
   });
 
-  function placeCard(
-    event: CustomEvent<{ card: Card; row: number; col: number }>
-  ) {
+  function placeCard(event: CustomEvent<{ row: number; col: number }>) {
     socket.emit(
       ClientToServerEvent.MOVEMENT,
       {
-        card: event.detail.card,
         playerId: player.id,
         col: event.detail.col,
         row: event.detail.row,
       },
       (movementResult) => {
-        console.log(movementResult);
-        if (movementResult.success) {
+        if (movementResult.success && movementResult.card) {
           playerHand.cards = playerHand.cards.filter(
-            (card) => card.id !== event.detail.card.id
+            (card) => card.id !== movementResult.card!.id
           );
 
           if (movementResult.nextCard) {
