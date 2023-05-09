@@ -32,6 +32,10 @@ export function createMatch(owner: MatchPlayer) {
   return match;
 }
 
+export function deleteMatch(code: string) {
+  delete codeToMatch[code];
+}
+
 export function testAndApplyMatchPlayerMovement(
   matchCode: string,
   playerId: string,

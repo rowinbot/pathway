@@ -2,7 +2,6 @@ import { BoardState } from "./board";
 import { Card } from "./cards";
 import {
   MatchCurrentTurn,
-  Match,
   MatchJoinStatus,
   MatchPlayer,
   Movement,
@@ -10,7 +9,6 @@ import {
   MatchTeamI,
   MatchPlayerHand,
 } from "./match";
-import { Player } from "./player";
 
 /**
  * Private response to a player movement.
@@ -70,13 +68,22 @@ export enum ServerToClientEvent {
    * Synchronizes the next turn with the client.
    */
   TURN_TIMEOUT = "TURN_TIMEOUT",
+
+  /**
+   * Fires when the match finishes under any of the following conditions:
+   * 1. When a team wins the match.                                (winner === MatchTeamI)
+   * 2. When no movements are left and the match is a draw.        (winner === null)
+   * 3. When the match is stale (no movements in $MAX_MATCH_TIME_SECONDS). (winner === null)
+   */
+  MATCH_FINISHED = "MATCH_FINISHED",
 }
 
 export interface ServerToClientEvents {
   [ServerToClientEvent.MATCH_JOIN](matchJoinStatus: MatchJoinStatus): void;
   [ServerToClientEvent.MATCH_STATE](
     boardState: BoardState,
-    matchPlayerHand: MatchPlayerHand
+    matchPlayerHand: MatchPlayerHand,
+    currentTurn: MatchCurrentTurn
   ): void;
   [ServerToClientEvent.MATCH_CONFIG_UPDATED](matchConfig: MatchConfig): void;
   [ServerToClientEvent.MATCH_PLAYERS_UPDATED](
@@ -86,7 +93,8 @@ export interface ServerToClientEvents {
     movement: LastMovement,
     currentTurn: MatchCurrentTurn
   ): void;
-  [ServerToClientEvent.TURN_TIMEOUT](currentTurn: MatchCurrentTurn): void;
+  [ServerToClientEvent.TURN_TIMEOUT](nextTurn: MatchCurrentTurn): void;
+  [ServerToClientEvent.MATCH_FINISHED](winner: MatchTeamI | null): void;
 }
 
 export enum ClientToServerEvent {

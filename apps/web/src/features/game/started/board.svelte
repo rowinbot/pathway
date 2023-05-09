@@ -13,9 +13,7 @@
 </script>
 
 <div class="overflow-x-auto w-full flex flex-row">
-  <ul
-    class="grid grid-cols-10 gap-2 p-8 flex-1 max-w-5xl mx-auto min-w-[500px]"
-  >
+  <ul class="grid grid-cols-10 gap-2 flex-1 max-w-5xl mx-auto min-w-[500px]">
     {#each staticBoardRows as row, rowI}
       {#each row as card, colI}
         {#if !isEmptyCard(card)}

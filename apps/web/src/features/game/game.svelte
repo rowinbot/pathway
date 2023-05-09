@@ -5,13 +5,14 @@
   import {
     type BoardState,
     type Player,
-    type Card,
     type MatchConfig,
     type MatchPlayer,
     type MatchPlayerHand,
+    type MatchCurrentTurn,
     buildBoard,
     MatchJoinStatus,
     CardNumber,
+    getMatchTeamName,
   } from "game-logic";
   import {
     type ClientToServerEvents,
@@ -31,9 +32,23 @@
 
   let matchPlayers: MatchPlayer[] = [];
   let matchStarted: boolean = false;
-  let matchConfig: MatchConfig;
+  let matchCurrentTurn: MatchCurrentTurn | null = null;
+  let matchConfig: MatchConfig | null = null;
   let playerHand: MatchPlayerHand;
+
+  $: matchCurrentTurnPlayer = matchCurrentTurn
+    ? findPlayerById(matchCurrentTurn.turnPlayerId)
+    : null;
+
   let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+
+  function goBackHome() {
+    window.location.assign("/game");
+  }
+
+  function findPlayerById(id: string): MatchPlayer | null {
+    return matchPlayers.find((player) => player.id === id) ?? null;
+  }
 
   onMount(async () => {
     player = await loadPlayer();
@@ -55,27 +70,48 @@
         joinStatus = status;
         if (status !== MatchJoinStatus.SUCCESS) {
           alert("Failed to join match: " + status);
+          goBackHome();
         }
       });
 
-      socket.on(ServerToClientEvent.MATCH_STATE, (state, hand) => {
+      socket.on(ServerToClientEvent.MATCH_STATE, (state, hand, currentTurn) => {
         // If we get the board, match already started
         matchStarted = true;
         boardState = state;
+        matchCurrentTurn = currentTurn;
         playerHand = hand;
+      });
+
+      socket.on(ServerToClientEvent.MATCH_CONFIG_UPDATED, (config) => {
+        matchConfig = config;
       });
 
       socket.on(ServerToClientEvent.MATCH_PLAYERS_UPDATED, (players) => {
         matchPlayers = players;
       });
 
-      socket.on(ServerToClientEvent.PLAYER_MOVEMENT, (movement) => {
-        const { card, col, row, team } = movement;
+      socket.on(ServerToClientEvent.TURN_TIMEOUT, (currentTurn) => {
+        matchCurrentTurn = currentTurn;
+      });
 
-        boardState[row][col] =
-          card.number === CardNumber.SingleJack ? null : team;
+      socket.on(
+        ServerToClientEvent.PLAYER_MOVEMENT,
+        (movement, currentTurn) => {
+          const { card, col, row, team } = movement;
 
-        console.log(boardState[row][col]);
+          boardState[row][col] =
+            card.number === CardNumber.SingleJack ? null : team;
+          matchCurrentTurn = currentTurn;
+        }
+      );
+
+      socket.on(ServerToClientEvent.MATCH_FINISHED, (winner) => {
+        if (winner) {
+          alert("Winner: " + getMatchTeamName(winner));
+        } else {
+          alert("Match is a draw");
+        }
+        goBackHome();
       });
 
       socket.connect();
@@ -118,9 +154,16 @@
     <h1 class="font-base text-5xl">Pathway</h1>
   </header>
 
-  {#if joinStatus === MatchJoinStatus.SUCCESS}
+  {#if joinStatus === MatchJoinStatus.SUCCESS && matchConfig}
     {#if matchStarted}
-      <Started {boardState} {playerHand} on:place-card={placeCard} />
+      <Started
+        {boardState}
+        {matchConfig}
+        {matchCurrentTurnPlayer}
+        {matchCurrentTurn}
+        {playerHand}
+        on:place-card={placeCard}
+      />
     {:else}
       <Entrance {matchPlayers} on:start-game={startGame} />
     {/if}

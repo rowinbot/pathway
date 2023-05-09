@@ -1,5 +1,6 @@
 import { getCurrentPlayer } from "@/helpers/player.helpers";
 import {
+  deleteMatch,
   getMatchByCode,
   getMatchPlayer,
   joinMatch,
@@ -9,7 +10,14 @@ import {
   updateMatchPlayerConnected,
 } from "@/services/match.service";
 import { getSingleHeaderValue } from "@/utils/misc";
-import { Match, MatchJoinStatus, MatchPlayer, Player } from "game-logic";
+import {
+  MAX_MATCH_TIME_SECONDS,
+  Match,
+  MatchCurrentTurn,
+  MatchJoinStatus,
+  MatchPlayer,
+  Player,
+} from "game-logic";
 import type { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import {
@@ -34,6 +42,9 @@ type AppSocket = Socket<
   InterServerEvents,
   SocketData
 >;
+
+const matchCodeToStaleGameTimer = {} as Record<Match["code"], NodeJS.Timeout>;
+const matchCodeToTurnTimer = {} as Record<Match["code"], NodeJS.Timeout>;
 
 /**
  * Sets up the game Socket.io server and the match join logic.
@@ -90,12 +101,18 @@ function onPlayerConnected(
   socket: AppSocket,
   io: AppServer
 ) {
+  io.to(match.code).emit(
+    ServerToClientEvent.MATCH_CONFIG_UPDATED,
+    match.config
+  );
+
   // If match already started, send the board state (could be a re-join).
   if (match.started && match.matchState) {
     socket.emit(
       ServerToClientEvent.MATCH_STATE,
       match.matchState.boardState,
-      match.matchState.playerHands[player.id]
+      match.matchState.playerHands[player.id],
+      match.matchState.currentTurn
     );
   }
 
@@ -109,6 +126,12 @@ function onPlayerConnected(
     matchCode: match.code,
     playerId: player.id,
   };
+
+  socket.onAny((event) => {
+    if (event === ClientToServerEvent.MOVEMENT) {
+      setupMatchStaleGameTimer(match, io);
+    }
+  });
 
   socket.on("disconnecting", () => {
     updateMatchPlayerConnected(match.code, player.id, false);
@@ -133,6 +156,7 @@ function setupClientToServerEvents(
     );
 
     if (isMovementValid && card) {
+      setupMatchTurnTimer(match, io);
       const nextTurn = nextMatchTurn(match.code);
 
       io.to(match.code).emit(
@@ -159,6 +183,8 @@ function setupClientToServerEvents(
     if (player.id !== match.owner.id) return callback(didStart);
 
     startMatch(match.code);
+    setupMatchTurnTimer(match, io);
+    setupMatchStaleGameTimer(match, io);
 
     const matchState = match.matchState;
     if (!!matchState) {
@@ -170,11 +196,45 @@ function setupClientToServerEvents(
         neighbouringSocket.emit(
           ServerToClientEvent.MATCH_STATE,
           matchState.boardState,
-          matchState.playerHands[neighbouringSocket.data.playerId]
+          matchState.playerHands[neighbouringSocket.data.playerId],
+          matchState.currentTurn
         );
       });
     }
 
     callback(didStart);
   });
+}
+
+function setupMatchTurnTimer(match: Match, io: AppServer) {
+  if (match.code in matchCodeToTurnTimer) {
+    clearTimeout(matchCodeToTurnTimer[match.code]);
+    delete matchCodeToTurnTimer[match.code];
+  }
+
+  matchCodeToTurnTimer[match.code] = setTimeout(() => {
+    const nextTurn = nextMatchTurn(match.code);
+
+    io.to(match.code).emit(ServerToClientEvent.TURN_TIMEOUT, nextTurn);
+    setupMatchTurnTimer(match, io);
+  }, match.config.turnTimeLimitSeconds * 1000);
+}
+
+function setupMatchStaleGameTimer(match: Match, io: AppServer) {
+  if (match.code in matchCodeToStaleGameTimer) {
+    clearTimeout(matchCodeToStaleGameTimer[match.code]);
+    delete matchCodeToStaleGameTimer[match.code];
+  }
+
+  matchCodeToStaleGameTimer[match.code] = setTimeout(() => {
+    io.to(match.code).emit(ServerToClientEvent.MATCH_FINISHED, null);
+    deleteMatch(match.code);
+
+    // Clear turn timer.
+    clearTimeout(matchCodeToTurnTimer[match.code]);
+    delete matchCodeToTurnTimer[match.code];
+
+    // Disconnect all sockets in the room.
+    io.to(match.code).disconnectSockets();
+  }, MAX_MATCH_TIME_SECONDS * 1000);
 }
