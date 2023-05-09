@@ -208,18 +208,29 @@ export const staticBoardRows: TupleMatrix<
   ],
 ];
 
+function isNotAJack(cardNumber: CardNumber): boolean {
+  return (
+    cardNumber !== CardNumber.SingleJack && cardNumber !== CardNumber.DoubleJack
+  );
+}
+
+/**
+ * Builds a card deck with all kinds and numbers twice except for jacks (single or double, which only appear once) - based on the game.
+ */
 export function getCards(): Card[] {
   const cards = [];
 
   for (const kind of Object.values(RedCardKind)) {
     for (const number of Object.values(CardNumber)) {
       cards.push(card(kind, number));
+      if (isNotAJack(number)) cards.push(card(kind, number));
     }
   }
 
   for (const kind of Object.values(BlackCardKind)) {
     for (const number of Object.values(CardNumber)) {
       cards.push(card(kind, number));
+      if (isNotAJack(number)) cards.push(card(kind, number));
     }
   }
 
