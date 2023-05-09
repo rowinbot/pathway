@@ -13,10 +13,9 @@ import { getSingleHeaderValue } from "@/utils/misc";
 import {
   MAX_MATCH_TIME_SECONDS,
   Match,
-  MatchCurrentTurn,
   MatchJoinStatus,
   MatchPlayer,
-  Player,
+  testTeamsLayout,
 } from "game-logic";
 import type { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
@@ -27,6 +26,7 @@ import {
   type SocketData,
   ClientToServerEvent,
   ServerToClientEvent,
+  MatchCouldNotStartReason,
 } from "game-logic/realtime";
 
 type AppServer = Server<
@@ -53,7 +53,7 @@ const matchCodeToTurnTimer = {} as Record<Match["code"], NodeJS.Timeout>;
 export function createGameSocket(httpServer: HttpServer) {
   const io: AppServer = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: "http://192.168.1.37:3000",
     },
   });
 
@@ -179,8 +179,13 @@ function setupClientToServerEvents(
 
   socket.on(ClientToServerEvent.START_GAME, async (callback) => {
     let didStart = false;
+    const matchHasValidTeams = testTeamsLayout(match.players);
 
-    if (player.id !== match.owner.id) return callback(didStart);
+    if (player.id !== match.owner.id)
+      return callback(didStart, MatchCouldNotStartReason.notOwner);
+
+    if (!matchHasValidTeams)
+      return callback(didStart, MatchCouldNotStartReason.invalidLayout);
 
     startMatch(match.code);
     setupMatchTurnTimer(match, io);
@@ -202,7 +207,7 @@ function setupClientToServerEvents(
       });
     }
 
-    callback(didStart);
+    callback(didStart, null);
   });
 }
 

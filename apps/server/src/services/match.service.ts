@@ -56,6 +56,14 @@ export function testAndApplyMatchPlayerMovement(
   const matchPlayer = getMatchPlayer(matchCode, playerId)!;
   const playerHand = matchState.playerHands[playerId];
 
+  if (matchState.currentTurn.turnPlayerId !== playerId)
+    // Not their turn
+    return {
+      isMovementValid: false,
+      card: null,
+      nextCard: null,
+    };
+
   const matchingCardI = getMatchPlayerCardIndexForPositionInBoard(
     matchState.boardState,
     matchPlayer.team,

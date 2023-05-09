@@ -15,6 +15,7 @@
   export let boardState: BoardState;
   export let matchCurrentTurn: MatchCurrentTurn | null = null;
   export let matchCurrentTurnPlayer: MatchPlayer | null = null;
+  export let currentMatchPlayer: MatchPlayer | null = null;
   export let matchConfig: MatchConfig;
   export let playerHand: MatchPlayerHand;
 
@@ -49,7 +50,7 @@
     <ul class="grid grid-cols-10 gap-2">
       {#each playerHand.cards as card (card.uid)}
         <li animate:flip in:fly={{ y: -5 }} out:fly={{ y: 100 }}>
-          <Card {card} row={0} col={0} occupiedByTeam={null} />
+          <Card {card} row={0} col={0} disabled={false} occupiedByTeam={null} />
         </li>
       {/each}
     </ul>
@@ -58,6 +59,6 @@
   <section class="max-w-5xl mx-auto space-y-2">
     <h2 class="text-2xl font-bold">Board</h2>
 
-    <Board {boardState} on:place-card />
+    <Board {playerHand} {currentMatchPlayer} {boardState} on:place-card />
   </section>
 </div>

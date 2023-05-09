@@ -36,25 +36,20 @@
   let matchConfig: MatchConfig | null = null;
   let playerHand: MatchPlayerHand;
 
-  $: matchCurrentTurnPlayer = matchCurrentTurn
-    ? findPlayerById(matchCurrentTurn.turnPlayerId)
-    : null;
+  $: currentMatchPlayer = findMatchPlayerById(player?.id, matchPlayers);
+
+  $: matchCurrentTurnPlayer = findMatchPlayerById(
+    matchCurrentTurn?.turnPlayerId,
+    matchPlayers
+  );
 
   let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
-
-  function goBackHome() {
-    window.location.assign("/game");
-  }
-
-  function findPlayerById(id: string): MatchPlayer | null {
-    return matchPlayers.find((player) => player.id === id) ?? null;
-  }
 
   onMount(async () => {
     player = await loadPlayer();
 
     try {
-      socket = io("ws://localhost:" + 3001, {
+      socket = io("ws://192.168.1.37:" + 3001, {
         autoConnect: false,
         extraHeaders: {
           "x-player-id": player.id,
@@ -142,16 +137,56 @@
     );
   }
 
+  function goBackHome() {
+    window.location.assign("/game");
+  }
+
+  function findMatchPlayerById(
+    id: string | null | undefined,
+    players: MatchPlayer[]
+  ): MatchPlayer | null {
+    if (id === null || id === undefined) return null;
+    return players.find((player) => player.id === id) ?? null;
+  }
+
+  // 🛎️ Event handlers below 👇
+
   function startGame() {
-    socket.emit(ClientToServerEvent.START_GAME, (didStart) => {
+    socket.emit(ClientToServerEvent.START_GAME, (didStart, reason) => {
       matchStarted = didStart;
+
+      if (!didStart && reason) {
+        alert("Couldn't start match due to: " + reason);
+      }
     });
+  }
+
+  function copyMatchCode() {
+    try {
+      navigator.clipboard.writeText(window.location.host + "/game/" + gameId);
+    } catch (err) {
+      console.log(err);
+    }
   }
 </script>
 
 <section class="space-y-4">
-  <header>
-    <h1 class="font-base text-5xl">Pathway</h1>
+  <header class="space-y-2">
+    <h1 class="font-base text-5xl">Game</h1>
+
+    <p class="text-2xl font-light">
+      Match
+
+      <span
+        role="button"
+        class="text-slate-500 select-all cursor-pointer"
+        tabindex="0"
+        on:click={copyMatchCode}
+        on:keydown={copyMatchCode}>{gameId}</span
+      >
+
+      <span class="text-slate-900">- @{player?.nickname ?? "..."}</span>
+    </p>
   </header>
 
   {#if joinStatus === MatchJoinStatus.SUCCESS && matchConfig}
@@ -159,13 +194,14 @@
       <Started
         {boardState}
         {matchConfig}
+        {currentMatchPlayer}
         {matchCurrentTurnPlayer}
         {matchCurrentTurn}
         {playerHand}
         on:place-card={placeCard}
       />
     {:else}
-      <Entrance {matchPlayers} on:start-game={startGame} />
+      <Entrance {currentMatchPlayer} {matchPlayers} on:start-game={startGame} />
     {/if}
   {/if}
 </section>

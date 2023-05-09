@@ -181,7 +181,7 @@ export function getNextMatchTurnPlayerId(
 ) {
   const currentTurnPlayerIdI = playerIds.indexOf(currentTurnPlayerId);
 
-  return playerIds[currentTurnPlayerIdI % playerIds.length];
+  return playerIds[(currentTurnPlayerIdI + 1) % playerIds.length];
 }
 
 export function getMatchTeams(matchPlayers: MatchPlayer[]) {
@@ -236,9 +236,9 @@ export function testTeamsLayout(matchPlayers: MatchPlayer[]) {
 export function getMatchTeamName(teamI: MatchTeamI) {
   switch (teamI) {
     case MatchTeamI.One:
-      return "Team Blue";
-    case MatchTeamI.Two:
       return "Team Red";
+    case MatchTeamI.Two:
+      return "Team Blue";
     case MatchTeamI.Three:
       return "Team Green";
   }

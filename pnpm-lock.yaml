@@ -92,6 +92,9 @@ importers:
       '@fontsource/assistant':
         specifier: ^4.5.12
         version: 4.5.12
+      '@iconify/svelte':
+        specifier: ^3.1.3
+        version: 3.1.3(svelte@3.58.0)
       '@solid-primitives/input-mask':
         specifier: ^0.1.7
         version: 0.1.7(solid-js@1.7.3)
@@ -766,6 +769,19 @@ packages:
 
   /@fontsource/assistant@4.5.12:
     resolution: {integrity: sha512-jTZjJD+uneGRO9cL5vsTHnrQ/2iXGHqIMDKFB+TjmO/uGSvCSO85y2mviKwyn5Cpo4AlOZcVwzHzUdiF+Py7Aw==}
+    dev: false
+
+  /@iconify/svelte@3.1.3(svelte@3.58.0):
+    resolution: {integrity: sha512-VxJO/lDIlNqBOS3z/Pfc9+oyIPP3Rm19280O1LCh48jChoWkjtzYEJcfx7cMxUTzMpYFTBZzsU7IiK++DBiDWQ==}
+    peerDependencies:
+      svelte: '>=3'
+    dependencies:
+      '@iconify/types': 2.0.0
+      svelte: 3.58.0
+    dev: false
+
+  /@iconify/types@2.0.0:
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
     dev: false
 
   /@jridgewell/gen-mapping@0.3.3:

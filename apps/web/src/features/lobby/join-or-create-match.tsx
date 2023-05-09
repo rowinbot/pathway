@@ -38,9 +38,11 @@ export function JoinOrCreateMatch(props: JoinOrCreateMatchProps) {
     } else {
       const { match, matchJoinStatus } = await joinMatch(joiningMatchCode);
 
+      console.log(match, matchJoinStatus);
+
       if (matchJoinStatus !== MatchJoinStatus.SUCCESS) {
         // NOTE: Improve error messaging
-        alert("Could not join match with error: " + status);
+        alert("Could not join match with error: " + matchJoinStatus);
         return;
       }
 

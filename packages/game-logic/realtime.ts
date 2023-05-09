@@ -32,6 +32,11 @@ export interface LastMovement extends Movement {
   team: MatchTeamI;
 }
 
+export enum MatchCouldNotStartReason {
+  invalidLayout = "invalidLayout",
+  notOwner = "notOwner",
+}
+
 export enum ServerToClientEvent {
   /**
    * Fired when a player joins a match.
@@ -102,11 +107,16 @@ export enum ClientToServerEvent {
   START_GAME = "2",
 }
 export interface ClientToServerEvents {
+  [ClientToServerEvent.START_GAME](
+    callback: (
+      success: boolean,
+      reason: MatchCouldNotStartReason | null
+    ) => void
+  ): void;
   [ClientToServerEvent.MOVEMENT](
     movement: Movement,
     callback: (response: MovementResponse) => void
   ): void;
-  [ClientToServerEvent.START_GAME](callback: (success: boolean) => void): void;
 }
 
 export interface InterServerEvents {}

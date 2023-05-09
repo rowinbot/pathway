@@ -52,15 +52,15 @@ router.post("/join/:code", function (req, res) {
     }
   }
 
-  const joined = joinMatch(code, player);
+  const joinStatus = joinMatch(code, player);
 
   let statusCode: number;
 
-  if (joined === MatchJoinStatus.MATCH_NOT_FOUND) {
+  if (joinStatus === MatchJoinStatus.MATCH_NOT_FOUND) {
     statusCode = 404;
-  } else if (joined === MatchJoinStatus.MATCH_FULL) {
+  } else if (joinStatus === MatchJoinStatus.MATCH_FULL) {
     statusCode = 409;
-  } else if (joined === MatchJoinStatus.MATCH_STARTED) {
+  } else if (joinStatus === MatchJoinStatus.MATCH_STARTED) {
     statusCode = 403;
   } else {
     statusCode = 200;
@@ -68,9 +68,7 @@ router.post("/join/:code", function (req, res) {
 
   return res.status(statusCode).json({
     match,
-    matchJoinStatus: joined
-      ? MatchJoinStatus.MATCH_FULL
-      : MatchJoinStatus.SUCCESS,
+    matchJoinStatus: joinStatus,
   });
 });
 

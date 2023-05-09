@@ -18,7 +18,10 @@
   export let card: Card;
   export let row: number;
   export let col: number;
+  export let disabled: boolean;
   export let occupiedByTeam: MatchTeamI | null;
+
+  $: cardKindOpacity = disabled ? 0.25 : 1;
 
   const dispatch = createEventDispatcher<{
     "place-card": { card: Card; row: number; col: number };
@@ -75,6 +78,7 @@
 
 <CardContainer
   bgColor={highlightColor(occupiedByTeam)}
+  {disabled}
   on:click={onPlaceCard}
   on:keydown={onPlaceCard}
 >
@@ -99,15 +103,17 @@
     >
   </g>
 
-  {#if cardKind(card) === RedCardKind.Diamonds}
-    <Diamond color={cardColor(card)} />
-  {:else if cardKind(card) === RedCardKind.Hearts}
-    <Heart color={cardColor(card)} />
-  {:else if cardKind(card) === BlackCardKind.Clover}
-    <Clover color={cardColor(card)} />
-  {:else if cardKind(card) === BlackCardKind.Spades}
-    <Spade color={cardColor(card)} />
-  {/if}
+  <g opacity={cardKindOpacity}>
+    {#if cardKind(card) === RedCardKind.Diamonds}
+      <Diamond color={cardColor(card)} />
+    {:else if cardKind(card) === RedCardKind.Hearts}
+      <Heart color={cardColor(card)} />
+    {:else if cardKind(card) === BlackCardKind.Clover}
+      <Clover color={cardColor(card)} />
+    {:else if cardKind(card) === BlackCardKind.Spades}
+      <Spade color={cardColor(card)} />
+    {/if}
+  </g>
 
   {#if occupiedByTeam !== null}
     <PlayerCoin color={tokenColor(occupiedByTeam)} />
