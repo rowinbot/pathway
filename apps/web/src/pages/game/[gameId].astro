@@ -9,9 +9,5 @@ invariant(gameId, "Game ID is required");
 ---
 
 <Layout title={gameId + " | Pathway"}>
-  <main class="py-8 flex flex-col">
-    <div class="max-w-7xl w-full px-8 mx-auto">
-      <Game client:load gameId={gameId} />
-    </div>
-  </main>
+  <Game client:load gameId={gameId} />
 </Layout>

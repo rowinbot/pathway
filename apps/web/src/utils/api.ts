@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const createAPI = () =>
   axios.create({
-    baseURL: "http://192.168.1.37:3001",
+    baseURL: import.meta.env.PUBLIC_SERVER_API_URL,
     headers: {
       "Content-Type": "application/json",
     },

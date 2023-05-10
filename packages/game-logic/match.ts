@@ -233,17 +233,6 @@ export function testTeamsLayout(matchPlayers: MatchPlayer[]) {
   }
 }
 
-export function getMatchTeamName(teamI: MatchTeamI) {
-  switch (teamI) {
-    case MatchTeamI.One:
-      return "Team Red";
-    case MatchTeamI.Two:
-      return "Team Blue";
-    case MatchTeamI.Three:
-      return "Team Green";
-  }
-}
-
 export function getCardsShuffled(): Card[] {
   const cards = getCards();
 

@@ -12,7 +12,6 @@
     buildBoard,
     MatchJoinStatus,
     CardNumber,
-    getMatchTeamName,
   } from "game-logic";
   import {
     type ClientToServerEvents,
@@ -22,6 +21,7 @@
   } from "game-logic/realtime";
   import Started from "./started/started.svelte";
   import Entrance from "./entrance/entrance.svelte";
+  import { getMatchTeamName } from "../../utils/match-team";
 
   export let gameId: string;
 
@@ -49,7 +49,7 @@
     player = await loadPlayer();
 
     try {
-      socket = io("ws://192.168.1.37:" + 3001, {
+      socket = io(import.meta.env.PUBLIC_SERVER_SOCKET_URL, {
         autoConnect: false,
         extraHeaders: {
           "x-player-id": player.id,
@@ -170,38 +170,50 @@
   }
 </script>
 
-<section class="space-y-4">
-  <header class="space-y-2">
-    <h1 class="font-base text-5xl">Game</h1>
-
-    <p class="text-2xl font-light">
-      Match
-
-      <span
-        role="button"
-        class="text-slate-500 select-all cursor-pointer"
-        tabindex="0"
-        on:click={copyMatchCode}
-        on:keydown={copyMatchCode}>{gameId}</span
-      >
-
-      <span class="text-slate-900">- @{player?.nickname ?? "..."}</span>
+<main class="pb-8 flex flex-col">
+  <div class="border-b-[1px] border-blue-300 py-2 bg-blue-50">
+    <p class="text-slate-900 max-w-7xl w-full mx-auto px-8">
+      <span class="text-blue-700">@{player?.nickname ?? "..."}</span>
     </p>
-  </header>
+  </div>
 
-  {#if joinStatus === MatchJoinStatus.SUCCESS && matchConfig}
-    {#if matchStarted}
-      <Started
-        {boardState}
-        {matchConfig}
-        {currentMatchPlayer}
-        {matchCurrentTurnPlayer}
-        {matchCurrentTurn}
-        {playerHand}
-        on:place-card={placeCard}
-      />
-    {:else}
-      <Entrance {currentMatchPlayer} {matchPlayers} on:start-game={startGame} />
-    {/if}
-  {/if}
-</section>
+  <div class="pt-8 max-w-7xl w-full px-8 mx-auto">
+    <section class="space-y-4">
+      <header class="space-y-2">
+        <h1 class="font-base text-5xl">Game</h1>
+
+        <p class="text-2xl font-light">
+          Match
+
+          <span
+            role="button"
+            class="text-slate-500 select-all cursor-pointer"
+            tabindex="0"
+            on:click={copyMatchCode}
+            on:keydown={copyMatchCode}>{gameId}</span
+          >
+        </p>
+      </header>
+
+      {#if joinStatus === MatchJoinStatus.SUCCESS && matchConfig}
+        {#if matchStarted}
+          <Started
+            {boardState}
+            {matchConfig}
+            {currentMatchPlayer}
+            {matchCurrentTurnPlayer}
+            {matchCurrentTurn}
+            {playerHand}
+            on:place-card={placeCard}
+          />
+        {:else}
+          <Entrance
+            {currentMatchPlayer}
+            {matchPlayers}
+            on:start-game={startGame}
+          />
+        {/if}
+      {/if}
+    </section>
+  </div>
+</main>

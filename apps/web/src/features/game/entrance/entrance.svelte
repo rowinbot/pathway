@@ -1,12 +1,8 @@
 <script lang="ts">
-  import {
-    type MatchPlayer,
-    getMatchTeamName,
-    getMatchTeams,
-    MatchTeamI,
-  } from "game-logic";
+  import { type MatchPlayer, getMatchTeams } from "game-logic";
   import { createEventDispatcher } from "svelte";
   import Icon from "@iconify/svelte";
+  import { getMatchTeamName, teamHeaderColor } from "../../../utils/match-team";
 
   export let currentMatchPlayer: MatchPlayer | null = null;
   export let matchPlayers: MatchPlayer[];
@@ -19,17 +15,6 @@
 
   function startGame() {
     dispatch("start-game");
-  }
-
-  function teamHeaderColor(team: MatchTeamI) {
-    switch (team) {
-      case MatchTeamI.One:
-        return "#A00";
-      case MatchTeamI.Two:
-        return "#00f";
-      case MatchTeamI.Three:
-        return "#080";
-    }
   }
 </script>
 
@@ -52,6 +37,13 @@
               <li>
                 <p class="whitespace-nowrap">
                   <span
+                    class:text-blue-700={currentMatchPlayer &&
+                      player.id === currentMatchPlayer.id}
+                  >
+                    @{player.nickname}
+                  </span>
+
+                  <span
                     class="w-2 h-2 align-middle inline-block rounded-full"
                     class:bg-green-600={player.isConnected}
                     class:bg-yellow-500={!player.isConnected}
@@ -59,8 +51,6 @@
                       ? 'connected'
                       : 'disconnected'}"
                   />
-
-                  {player.nickname}
 
                   {#if player.isOwner}
                     <Icon

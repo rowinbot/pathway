@@ -103,8 +103,8 @@ export interface ServerToClientEvents {
 }
 
 export enum ClientToServerEvent {
-  MOVEMENT = "1",
-  START_GAME = "2",
+  MOVEMENT = "MOVEMENT",
+  START_GAME = "START_GAME",
 }
 export interface ClientToServerEvents {
   [ClientToServerEvent.START_GAME](

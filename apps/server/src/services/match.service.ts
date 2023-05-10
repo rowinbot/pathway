@@ -135,7 +135,7 @@ export function startMatch(matchCode: string): boolean {
   }
 
   const cardsDeck = getCardsShuffled();
-  const playersHands = {} as Record<string, MatchPlayerHand>;
+  const playerHands = {} as Record<string, MatchPlayerHand>;
 
   for (const player of match.players) {
     const cards: Card[] = [];
@@ -144,9 +144,7 @@ export function startMatch(matchCode: string): boolean {
       cards.push(cardsDeck.pop()!);
     }
 
-    console.log(player.id, cardsDeck[cardsDeck.length - 1]);
-
-    playersHands[player.id] = {
+    playerHands[player.id] = {
       cards,
     };
   }
@@ -154,7 +152,7 @@ export function startMatch(matchCode: string): boolean {
   match.started = true;
   match.matchState = {
     boardState: buildBoard(),
-    playerHands: playersHands,
+    playerHands,
     cardsDeck,
     currentTurn: {
       turnStartTime: Date.now(),

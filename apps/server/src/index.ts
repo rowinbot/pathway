@@ -8,6 +8,6 @@ const app = initApp();
 const httpServer = createServer(app);
 createGameSocket(httpServer);
 
-httpServer.listen(port, "192.168.1.37", () => {
+httpServer.listen(port, process.env.SERVER_HOST || "localhost", () => {
   console.log(`api running on ${port}`);
 });

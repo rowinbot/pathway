@@ -53,7 +53,7 @@ const matchCodeToTurnTimer = {} as Record<Match["code"], NodeJS.Timeout>;
 export function createGameSocket(httpServer: HttpServer) {
   const io: AppServer = new Server(httpServer, {
     cors: {
-      origin: "http://192.168.1.37:3000",
+      origin: process.env.WEB_HOST ?? "http://localhost:3000",
     },
   });
 
@@ -179,7 +179,7 @@ function setupClientToServerEvents(
 
   socket.on(ClientToServerEvent.START_GAME, async (callback) => {
     let didStart = false;
-    const matchHasValidTeams = testTeamsLayout(match.players);
+    const matchHasValidTeams = true || testTeamsLayout(match.players);
 
     if (player.id !== match.owner.id)
       return callback(didStart, MatchCouldNotStartReason.notOwner);
