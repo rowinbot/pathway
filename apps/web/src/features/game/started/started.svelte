@@ -5,12 +5,16 @@
     MatchCurrentTurn,
     MatchPlayer,
     MatchPlayerHand,
+    Card as CardObject,
   } from "game-logic";
   import Board from "./board.svelte";
   import Card from "./card.svelte";
   import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
   import CountdownTimer from "./misc/countdown-timer.svelte";
+  import CardContainer from "./cards/card-container.svelte";
+  import Coin from "./cards/coin.svelte";
+  import { createEventDispatcher } from "svelte";
 
   export let boardState: BoardState;
   export let matchCurrentTurn: MatchCurrentTurn | null = null;
@@ -19,7 +23,37 @@
   export let matchConfig: MatchConfig;
   export let playerHand: MatchPlayerHand;
 
-  $: console.log("matchCurrentTurn", matchCurrentTurn);
+  const dispatch = createEventDispatcher<{
+    "pick-card": { card: CardObject; row: number; col: number };
+  }>();
+
+  let showHintsForCard: CardObject | null = null;
+  let showAllHints = false;
+
+  function onPickHandCard(e: CustomEvent<{ card: CardObject }>) {
+    const card = e.detail.card;
+
+    showAllHints = false;
+
+    if (card.id === showHintsForCard?.id) {
+      showHintsForCard = null;
+    } else {
+      showHintsForCard = e.detail.card;
+    }
+  }
+
+  function onPickCard(
+    e: CustomEvent<{ card: CardObject; row: number; col: number }>
+  ) {
+    showAllHints = false;
+    showHintsForCard = null;
+    dispatch("pick-card", e.detail);
+  }
+
+  function onClickShowAllHints() {
+    showAllHints = !showAllHints;
+    showHintsForCard = null;
+  }
 </script>
 
 <div class="space-y-4">
@@ -50,15 +84,35 @@
     <ul class="grid grid-cols-10 gap-2">
       {#each playerHand.cards as card (card.uid)}
         <li animate:flip in:fly={{ y: -5 }} out:fly={{ y: 100 }}>
-          <Card {card} row={0} col={0} disabled={false} occupiedByTeam={null} />
+          <Card
+            {card}
+            row={0}
+            col={0}
+            disabled={false}
+            occupiedByTeam={null}
+            on:pick-card={onPickHandCard}
+          />
         </li>
       {/each}
+
+      <li>
+        <CardContainer on:click={onClickShowAllHints}>
+          <Coin color="#383838" />
+        </CardContainer>
+      </li>
     </ul>
   </section>
 
   <section class="max-w-5xl mx-auto space-y-2">
     <h2 class="text-2xl font-bold">Board</h2>
 
-    <Board {playerHand} {currentMatchPlayer} {boardState} on:place-card />
+    <Board
+      {playerHand}
+      {currentMatchPlayer}
+      {boardState}
+      {showHintsForCard}
+      {showAllHints}
+      on:pick-card={onPickCard}
+    />
   </section>
 </div>

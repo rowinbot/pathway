@@ -1,42 +1,64 @@
 <script lang="ts">
-  import Card from "./card.svelte";
+  import type {
+    BoardState,
+    MatchPlayer,
+    MatchPlayerHand,
+    Card as CardObject,
+  } from "game-logic";
   import {
-    type BoardState,
-    type MatchPlayer,
-    type MatchPlayerHand,
     staticBoardRows,
     isEmptyCard,
-    getMatchPlayerCardIndexForPositionInBoard,
+    getMatchingHandCardIndexToPositionInBoard,
+    testHandCardToPositionInBoard,
   } from "game-logic";
+  import Card from "./card.svelte";
   import CardContainer from "./cards/card-container.svelte";
   import Coin from "./cards/coin.svelte";
+  import { fly } from "svelte/transition";
 
   export let boardState: BoardState;
   export let playerHand: MatchPlayerHand;
   export let currentMatchPlayer: MatchPlayer | null = null;
+  export let showHintsForCard: CardObject | null = null;
+  export let showAllHints: boolean = false;
 </script>
 
 <div class="overflow-x-auto w-full flex flex-row">
-  <ul class="grid grid-cols-10 gap-2 flex-1 max-w-5xl mx-auto min-w-[500px]">
+  <ul
+    class="grid grid-cols-10 gap-2 py-5 flex-1 max-w-5xl mx-auto min-w-[500px]"
+  >
     {#each staticBoardRows as row, rowI}
       {#each row as card, colI}
         {#if !isEmptyCard(card)}
-          <li>
+          {@const isDisabled = currentMatchPlayer
+            ? showAllHints
+              ? getMatchingHandCardIndexToPositionInBoard(
+                  boardState,
+                  currentMatchPlayer.team,
+                  playerHand,
+                  rowI,
+                  colI,
+                  true
+                ) === null
+              : showHintsForCard
+              ? testHandCardToPositionInBoard(
+                  boardState,
+                  currentMatchPlayer.team,
+                  showHintsForCard,
+                  rowI,
+                  colI
+                ) === false
+              : false
+            : false}
+
+          <li in:fly={{ y: -5 }}>
             <Card
               occupiedByTeam={boardState[rowI][colI]}
               row={rowI}
               col={colI}
-              disabled={currentMatchPlayer
-                ? getMatchPlayerCardIndexForPositionInBoard(
-                    boardState,
-                    currentMatchPlayer.team,
-                    playerHand,
-                    rowI,
-                    colI
-                  ) === null
-                : false}
+              disabled={isDisabled}
               {card}
-              on:place-card
+              on:pick-card
             />
           </li>
         {:else}

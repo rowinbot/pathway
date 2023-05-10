@@ -4,7 +4,7 @@ import {
   type Player,
   type MatchPlayerHand,
   buildBoard,
-  getMatchPlayerCardIndexForPositionInBoard,
+  getMatchingHandCardIndexToPositionInBoard,
   CardNumber,
   DEFAULT_ROOM_CONFIG,
   getNextMatchTurnPlayerId,
@@ -13,6 +13,9 @@ import {
   Card,
   CARDS_PER_PLAYER,
   getCardsShuffled,
+  MatchState,
+  cardIsJack,
+  staticBoardRows,
 } from "game-logic";
 
 const codeToMatch = {} as Record<Match["code"], Match>;
@@ -34,6 +37,35 @@ export function createMatch(owner: MatchPlayer) {
 
 export function deleteMatch(code: string) {
   delete codeToMatch[code];
+}
+
+function getNextCardInDeck(
+  matchState: MatchState,
+  player: MatchPlayer
+): Card | null {
+  const nextCard = matchState.cardsDeck.pop();
+
+  if (!nextCard) {
+    return null;
+  }
+
+  if (cardIsJack(nextCard)) {
+    return nextCard;
+  }
+
+  for (let row = 0; row < staticBoardRows.length; row++) {
+    const rowCols = staticBoardRows[row];
+
+    for (let col = 0; col < rowCols.length; col++) {
+      const cardAtPos = rowCols[col];
+      const isPositionFree = matchState.boardState[row][col] === null;
+
+      if (typeof cardAtPos === "symbol") continue;
+      else if (isPositionFree && cardAtPos.id === nextCard.id) return nextCard;
+    }
+  }
+
+  return getNextCardInDeck(matchState, player);
 }
 
 export function testAndApplyMatchPlayerMovement(
@@ -64,7 +96,7 @@ export function testAndApplyMatchPlayerMovement(
       nextCard: null,
     };
 
-  const matchingCardI = getMatchPlayerCardIndexForPositionInBoard(
+  const matchingCardI = getMatchingHandCardIndexToPositionInBoard(
     matchState.boardState,
     matchPlayer.team,
     playerHand,
@@ -86,7 +118,7 @@ export function testAndApplyMatchPlayerMovement(
   playerHand.cards.splice(matchingCardI, 1);
 
   // Add another card to player's hand
-  const nextCard = matchState.cardsDeck.pop() ?? null;
+  const nextCard = getNextCardInDeck(matchState, matchPlayer);
 
   if (nextCard) {
     playerHand.cards.push(nextCard);

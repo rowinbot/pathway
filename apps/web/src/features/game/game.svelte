@@ -204,7 +204,7 @@
             {matchCurrentTurnPlayer}
             {matchCurrentTurn}
             {playerHand}
-            on:place-card={placeCard}
+            on:pick-card={placeCard}
           />
         {:else}
           <Entrance

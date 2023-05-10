@@ -214,6 +214,10 @@ function isNotAJack(cardNumber: CardNumber): boolean {
   );
 }
 
+export function cardIsJack(card: Card): boolean {
+  return !isNotAJack(card.number);
+}
+
 /**
  * Builds a card deck with all kinds and numbers twice except for jacks (single or double, which only appear once) - based on the game.
  */

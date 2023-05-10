@@ -1,5 +1,11 @@
 import { BoardState } from "./board";
-import { Card, CardNumber, getCards, staticBoardRows } from "./cards";
+import {
+  Card,
+  CardNumber,
+  cardIsJack,
+  getCards,
+  staticBoardRows,
+} from "./cards";
 import { Player } from "./player";
 
 export interface Match {
@@ -116,26 +122,66 @@ export function getMatchingPlayerHandCardIndexForCard(
       compatibleCardsIndexes.push(i);
     }
 
-    if (card.number === CardNumber.SingleJack) compatibleCardsIndexes.push(i);
-
-    if (card.number === CardNumber.DoubleJack) compatibleCardsIndexes.push(i);
+    if (cardIsJack(card)) compatibleCardsIndexes.push(i);
   }
 
   return compatibleCardsIndexes;
 }
 
-export function getMatchPlayerCardIndexForPositionInBoard(
-  boardState: BoardState,
-  playerTeam: MatchTeamI,
-  playerHand: MatchPlayerHand,
-  row: number,
-  col: number
-): number | null {
+export function getCardAtPos(row: number, col: number): Card | null {
   const cardAtPos = staticBoardRows[row][col];
   const isEmptyCard = typeof cardAtPos === "symbol";
 
   // Ignore movements to blank cards - blank corners
   if (isEmptyCard) return null;
+
+  return cardAtPos;
+}
+
+export function testHandCardToPositionInBoard(
+  boardState: BoardState,
+  playerTeam: MatchTeamI,
+  playerHandCard: Card,
+  row: number,
+  col: number
+): boolean {
+  const cardAtPos = getCardAtPos(row, col);
+  if (!cardAtPos) return false;
+
+  const positionState = boardState[row][col];
+  const isPositionFree = positionState === null;
+  const isPositionOccupiedByPlayerTeam = positionState === playerTeam;
+
+  // If player has a card that matches the position and the position is free, pick it.
+  if (cardAtPos.id === playerHandCard.id && isPositionFree) {
+    return true;
+  }
+
+  // Otherwise, store the index of any joker card that matches the position to return it later.
+  // But we'll still continue to loop to check for a direct card match.
+  else if (playerHandCard.number === CardNumber.DoubleJack && isPositionFree) {
+    return true;
+  } else if (
+    playerHandCard.number === CardNumber.SingleJack &&
+    !isPositionFree &&
+    !isPositionOccupiedByPlayerTeam
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+export function getMatchingHandCardIndexToPositionInBoard(
+  boardState: BoardState,
+  playerTeam: MatchTeamI,
+  playerHand: MatchPlayerHand,
+  row: number,
+  col: number,
+  ignoreJacks = false
+): number | null {
+  const cardAtPos = getCardAtPos(row, col);
+  if (!cardAtPos) return null;
 
   const compatibleCardsIndexes = getMatchingPlayerHandCardIndexForCard(
     playerHand,
@@ -144,35 +190,32 @@ export function getMatchPlayerCardIndexForPositionInBoard(
 
   if (compatibleCardsIndexes.length === 0) return null;
 
-  const positionState = boardState[row][col];
-  const isPositionFree = positionState === null;
-  const isPositionOccupiedByPlayerTeam = positionState === playerTeam;
-
-  // Jokers
-  let compatibleJokerI: number | null = null;
+  // Jacks have less priority (< direct card match) for placement, so we want to check entire hand before placing a jack.
+  let compatibleJackI: number | null = null;
 
   for (const i of compatibleCardsIndexes) {
     const playerCard = playerHand.cards[i];
 
-    // If player has a card that matches the position and the position is free, pick it.
-    if (cardAtPos.id === playerCard.id && isPositionFree) {
-      return i;
-    }
+    const matchesCardAtPos = testHandCardToPositionInBoard(
+      boardState,
+      playerTeam,
+      playerCard,
+      row,
+      col
+    );
 
-    // Otherwise, store the index of any joker card that matches the position to return it later.
-    // But we'll still continue to loop to check for a direct card match.
-    else if (playerCard.number === CardNumber.DoubleJack && isPositionFree) {
-      compatibleJokerI = i;
-    } else if (
-      playerCard.number === CardNumber.SingleJack &&
-      !isPositionFree &&
-      !isPositionOccupiedByPlayerTeam
-    ) {
-      compatibleJokerI = i;
+    if (matchesCardAtPos) {
+      if (cardIsJack(playerCard)) {
+        if (ignoreJacks) continue;
+
+        compatibleJackI = i;
+      } else {
+        return i;
+      }
     }
   }
 
-  return compatibleJokerI;
+  return compatibleJackI;
 }
 
 export function getNextMatchTurnPlayerId(

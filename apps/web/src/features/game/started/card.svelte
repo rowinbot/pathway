@@ -28,7 +28,7 @@
   $: cardKindOpacity = disabled ? 0.25 : 1;
 
   const dispatch = createEventDispatcher<{
-    "place-card": { card: Card; row: number; col: number };
+    "pick-card": { card: Card; row: number; col: number };
   }>();
 
   const width = 240;
@@ -52,7 +52,7 @@
   }
 
   function onPlaceCard() {
-    dispatch("place-card", { card, row, col });
+    dispatch("pick-card", { card, row, col });
   }
 </script>
 
@@ -86,19 +86,17 @@
     >
   </g>
 
-  <g opacity={cardKindOpacity}>
-    {#if cardKind(card) === RedCardKind.Diamonds}
-      <Diamond color={cardColor(card)} />
-    {:else if cardKind(card) === RedCardKind.Hearts}
-      <Heart color={cardColor(card)} />
-    {:else if cardKind(card) === BlackCardKind.Clover}
-      <Clover color={cardColor(card)} />
-    {:else if cardKind(card) === BlackCardKind.Spades}
-      <Spade color={cardColor(card)} />
-    {/if}
-  </g>
+  {#if cardKind(card) === RedCardKind.Diamonds}
+    <Diamond opacity={cardKindOpacity} color={cardColor(card)} />
+  {:else if cardKind(card) === RedCardKind.Hearts}
+    <Heart opacity={cardKindOpacity} color={cardColor(card)} />
+  {:else if cardKind(card) === BlackCardKind.Clover}
+    <Clover opacity={cardKindOpacity} color={cardColor(card)} />
+  {:else if cardKind(card) === BlackCardKind.Spades}
+    <Spade opacity={cardKindOpacity} color={cardColor(card)} />
+  {/if}
 
   {#if occupiedByTeam !== null}
-    <PlayerCoin color={teamTokenColor(occupiedByTeam)} />
+    <PlayerCoin color={teamTokenColor(occupiedByTeam)} opacity={1} />
   {/if}
 </CardContainer>
