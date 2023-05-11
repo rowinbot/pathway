@@ -22,6 +22,8 @@
   import Started from "./started/started.svelte";
   import Entrance from "./entrance/entrance.svelte";
   import { getMatchTeamName } from "../../utils/match-team";
+  import { notifications } from "./misc/notifications";
+  import Notifications from "./misc/notifications.svelte";
 
   export let gameId: string;
 
@@ -42,6 +44,16 @@
     matchCurrentTurn?.turnPlayerId,
     matchPlayers
   );
+
+  $: {
+    if (matchCurrentTurnPlayer) {
+      notifications.info(
+        "It's " +
+          (matchCurrentTurnPlayer.id === player.id ? "your" : "their") +
+          " turn"
+      );
+    }
+  }
 
   let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -75,6 +87,13 @@
         boardState = state;
         matchCurrentTurn = currentTurn;
         playerHand = hand;
+
+        notifications.send(
+          currentMatchPlayer
+            ? "You are playing with the " +
+                getMatchTeamName(currentMatchPlayer.team)
+            : "You are playing as @" + player.nickname
+        );
       });
 
       socket.on(ServerToClientEvent.MATCH_CONFIG_UPDATED, (config) => {
@@ -86,6 +105,19 @@
       });
 
       socket.on(ServerToClientEvent.TURN_TIMEOUT, (currentTurn) => {
+        const lastTurnPlayer = findMatchPlayerById(
+          currentTurn.turnPlayerId,
+          matchPlayers
+        )!;
+
+        notifications.danger(
+          'Turn timed out for "' +
+            lastTurnPlayer.nickname +
+            '" (' +
+            getMatchTeamName(lastTurnPlayer.team) +
+            ")"
+        );
+
         matchCurrentTurn = currentTurn;
       });
 
@@ -217,3 +249,5 @@
     </section>
   </div>
 </main>
+
+<Notifications />
