@@ -131,7 +131,13 @@ importers:
       turbo:
         specifier: ^1.9.3
         version: 1.9.3
+      uuid:
+        specifier: ^9.0.0
+        version: 9.0.0
     devDependencies:
+      '@types/uuid':
+        specifier: ^9.0.1
+        version: 9.0.1
       tsconfig:
         specifier: workspace:*
         version: link:../../packages/tsconfig
