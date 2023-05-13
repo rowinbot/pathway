@@ -16,6 +16,7 @@ import {
   MatchState,
   cardIsJack,
   staticBoardRows,
+  cardNumber,
 } from "game-logic";
 
 const codeToMatch = {} as Record<Match["code"], Match>;
@@ -126,7 +127,7 @@ export function testAndApplyMatchPlayerMovement(
 
   // Add card to board
   matchState.boardState[movement.row][movement.col] =
-    card.number === CardNumber.SingleJack ? null : matchPlayer.team;
+    cardNumber(card) === CardNumber.SingleJack ? null : matchPlayer.team;
 
   return {
     isMovementValid: true,

@@ -19,7 +19,7 @@
 </script>
 
 <div class="space-y-6">
-  <section>
+  <section class="space-y-2">
     <h2 class="text-lg font-bold">Teams</h2>
 
     <div class="w-full grid md:grid-cols-3 gap-4">
@@ -41,6 +41,10 @@
                       player.id === currentMatchPlayer.id}
                   >
                     @{player.nickname}
+
+                    {#if player.id === currentMatchPlayer?.id}
+                      (you)
+                    {/if}
                   </span>
 
                   <span

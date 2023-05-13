@@ -3,6 +3,7 @@ import {
   Card,
   CardNumber,
   cardIsJack,
+  cardNumber,
   getCards,
   staticBoardRows,
 } from "./cards";
@@ -159,10 +160,13 @@ export function testHandCardToPositionInBoard(
 
   // Otherwise, store the index of any joker card that matches the position to return it later.
   // But we'll still continue to loop to check for a direct card match.
-  else if (playerHandCard.number === CardNumber.DoubleJack && isPositionFree) {
+  else if (
+    cardNumber(playerHandCard) === CardNumber.DoubleJack &&
+    isPositionFree
+  ) {
     return true;
   } else if (
-    playerHandCard.number === CardNumber.SingleJack &&
+    cardNumber(playerHandCard) === CardNumber.SingleJack &&
     !isPositionFree &&
     !isPositionOccupiedByPlayerTeam
   ) {

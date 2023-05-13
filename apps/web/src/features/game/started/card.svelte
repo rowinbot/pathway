@@ -32,16 +32,16 @@
   }>();
 
   const width = 240;
-  const height = 336;
+  const height = 280;
 
   const marginX = 15;
   const marginY = 20;
 
-  const redCardKindColor = "#F80";
+  const redCardKindColor = "#ff3377";
   const blackCardKindColor = "#222222";
 
   function cardColor(card: Card) {
-    switch (card.kind) {
+    switch (cardKind(card)) {
       case BlackCardKind.Clover:
       case BlackCardKind.Spades:
         return blackCardKindColor;

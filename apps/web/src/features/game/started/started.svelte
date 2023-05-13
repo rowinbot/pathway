@@ -57,9 +57,13 @@
 
 <div class="space-y-4">
   {#if matchCurrentTurn && matchCurrentTurnPlayer}
-    <section class="flex-1 max-w-5xl mx-auto min-w-[500px] space-y-2">
+    <section class="flex-1 max-w-5xl mx-auto space-y-2">
       <h2 class="text-2xl font-bold">
         Turn: {matchCurrentTurnPlayer.nickname}
+
+        {#if matchCurrentTurnPlayer.id === currentMatchPlayer?.id}
+          (you)
+        {/if}
         <span
           class="w-3 h-3 align-middle inline-block rounded-full"
           class:bg-green-600={matchCurrentTurnPlayer.isConnected}
@@ -77,10 +81,23 @@
     </section>
   {/if}
 
-  <section class="flex-1 max-w-5xl mx-auto min-w-[500px] space-y-2">
+  <section class="max-w-5xl mx-auto space-y-2">
+    <h2 class="text-2xl font-bold">Board</h2>
+
+    <Board
+      {playerHand}
+      {currentMatchPlayer}
+      {boardState}
+      {showHintsForCard}
+      {showAllHints}
+      on:pick-card={onPickCard}
+    />
+  </section>
+
+  <section class="flex-1 max-w-5xl mx-auto space-y-2">
     <h2 class="text-2xl font-bold">Your hand</h2>
 
-    <ul class="grid grid-cols-10 gap-2">
+    <ul class="grid grid-cols-10 gap-1 md:gap-2">
       {#each playerHand.cards as card (card.uid)}
         <li animate:flip in:fly={{ y: -5 }} out:fly={{ y: 100 }}>
           <Card
@@ -100,18 +117,5 @@
         </CardContainer>
       </li>
     </ul>
-  </section>
-
-  <section class="max-w-5xl mx-auto space-y-2">
-    <h2 class="text-2xl font-bold">Board</h2>
-
-    <Board
-      {playerHand}
-      {currentMatchPlayer}
-      {boardState}
-      {showHintsForCard}
-      {showAllHints}
-      on:pick-card={onPickCard}
-    />
   </section>
 </div>

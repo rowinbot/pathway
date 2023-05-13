@@ -215,7 +215,7 @@ function isNotAJack(cardNumber: CardNumber): boolean {
 }
 
 export function cardIsJack(card: Card): boolean {
-  return !isNotAJack(card.number);
+  return !isNotAJack(cardNumber(card));
 }
 
 /**

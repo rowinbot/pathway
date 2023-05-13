@@ -12,6 +12,7 @@
     buildBoard,
     MatchJoinStatus,
     CardNumber,
+    cardNumber,
   } from "game-logic";
   import {
     type ClientToServerEvents,
@@ -127,7 +128,7 @@
           const { card, col, row, team } = movement;
 
           boardState[row][col] =
-            card.number === CardNumber.SingleJack ? null : team;
+            cardNumber(card) === CardNumber.SingleJack ? null : team;
           matchCurrentTurn = currentTurn;
         }
       );
@@ -209,7 +210,7 @@
     </p>
   </div>
 
-  <div class="pt-8 max-w-7xl w-full px-8 mx-auto">
+  <div class="pt-8 max-w-7xl w-full px-2 first-line:md:px-8 mx-auto">
     <section class="space-y-4">
       <header class="space-y-2">
         <h1 class="font-base text-5xl">Game</h1>

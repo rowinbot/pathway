@@ -1,6 +1,6 @@
 <script lang="ts">
   const width = 240;
-  const height = 336 / 1.7;
+  const height = 336 / 1.2;
 
   export let bgColor: string = "#fff";
   export let disabled: boolean = false;
