@@ -8,7 +8,7 @@
     "start": "node server.mjs",
     "build": "astro build",
     "format": "prettier .",
-    "deploy-app": "fly deploy --config ./fly.toml --dockerfile ./Dockerfile ../../"
+    "deploy-app": "fly deploy --config ./apps/web/fly.toml --dockerfile ./apps/web/Dockerfile ../../"
   },
   "dependencies": {
     "@astrojs/lit": "^2.0.1",
