@@ -45,7 +45,6 @@
   function onPickCard(
     e: CustomEvent<{ card: CardObject; row: number; col: number }>
   ) {
-    showAllHints = false;
     showHintsForCard = null;
     dispatch("pick-card", e.detail);
   }

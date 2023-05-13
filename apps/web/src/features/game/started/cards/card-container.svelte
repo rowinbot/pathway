@@ -6,7 +6,7 @@
   export let disabled: boolean = false;
 </script>
 
-<button {disabled} on:click>
+<button on:click>
   <svg
     width="100%"
     viewBox="0 0 {width} {height}"
