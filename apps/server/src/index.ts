@@ -9,5 +9,5 @@ const httpServer = createServer(app);
 createGameSocket(httpServer);
 
 httpServer.listen(port, process.env.SERVER_HOST || "localhost", () => {
-  console.log(`api running on ${port}`);
+  console.log(`api running on ${process.env.SERVER_HOST} - ${port}`);
 });

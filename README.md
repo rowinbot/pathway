@@ -1,14 +1,28 @@
 # The Pathway Game
 
-> POSTMORTEM: The idea to try-out Astro along with Svelte and Nest with a monorepo was a Solid one (pun intended) but turns out Nest.js doesn't support ESM modules in a simple way, one would've to do too many tricks to make it work they way I wanted. So I've decided to go with Next.js (App Router) and test it out.
+This is The Pathway Game (a spin-off of Sequence).
 
-This is The Pathway Game (a spin-off of Sequence), written in Astro mainly (The Glue®) with the logic components behind the game written in Svelte and the lobby components written in Solid.
+This is a Turbopack monorepo with the following structure (apps + packages):
 
-## 🙋‍♀️ Why three frameworks?
+```plaintext
+/
+├── apps/
+│   ├── web/
+│   │   └── The Front-End for the game, written in Astro (The Glue®) with the logic components behind the game written in Svelte and the lobby components written in Solid.
+│   └── server/
+│       └── The Back-End for the game, written in Node.js with Express and Socket.io.
+├── packages/
+│   ├── game-logic/
+│   │   └── The logic components behind the game, written in Typescript.
+│   └── tsconfig/
+│       └── The shared Typescript configuration for the project.
+```
+
+## 🙋‍♀️ Why three frameworks for the Front-End?
 
 Just because. Good timing and good technologies. Can they really work **well** together? I'm set to figure it out!
 
-## 🚀 Project Structure
+## 🚀 Front-End Structure
 
 ```plaintext
 /
@@ -27,19 +41,17 @@ Just because. Good timing and good technologies. Can they really work **well** t
 
 Any static assets, like images, can be placed in the `public/` directory.
 
+## 🍦 Back-End Structure
+
+TBD
+
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
 
-| Command                | Action                                           |
-| :--------------------- | :----------------------------------------------- |
-| `npm install`          | Installs dependencies                            |
-| `npm run dev`          | Starts local dev server at `localhost:3000`      |
-| `npm run build`        | Build your production site to `./dist/`          |
-| `npm run preview`      | Preview your build locally, before deploying     |
-| `npm run astro ...`    | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [Astro's documentation](https://docs.astro.build).
+| Command                 | Action                                           |
+| :---------------------- | :----------------------------------------------- |
+| `pnpm install`          | Installs dependencies                            |
+| `pnpm run dev`          | Starts local dev server for the apps             |
+| `pnpm run build`        | Build the apps in production mode                |
+| `pnpm run lint`         | Runs the linter for the apps                     |
