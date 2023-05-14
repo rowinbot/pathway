@@ -59,7 +59,7 @@ function getNextCardInDeck(
 
     for (let col = 0; col < rowCols.length; col++) {
       const cardAtPos = rowCols[col];
-      const isPositionFree = matchState.boardState[row][col] === null;
+      const isPositionFree = matchState.boardState[row][col].team === null;
 
       if (typeof cardAtPos === "symbol") continue;
       else if (isPositionFree && cardAtPos.id === nextCard.id) return nextCard;
