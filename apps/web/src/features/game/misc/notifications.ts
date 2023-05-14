@@ -1,7 +1,7 @@
 import { writable, derived } from "svelte/store";
 import { v4 as uuid } from "uuid";
 
-const TIMEOUT = 1500;
+const TIMEOUT = 1250;
 
 type NotificationType = "default" | "danger" | "warning" | "info" | "success";
 interface Notification {

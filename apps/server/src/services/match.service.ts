@@ -260,7 +260,6 @@ export function joinMatch(matchCode: string, player: Player): MatchJoinStatus {
 
   if (Object.keys(match.players).length < 12 - 1) {
     match.players.push(newMatchPlayerObj(player, match));
-    console.log(match.players);
     return MatchJoinStatus.SUCCESS;
   }
 
@@ -280,8 +279,6 @@ export function newMatchPlayerObj(player: Player, match?: Match): MatchPlayer {
     team: MatchTeamI.One,
   };
 
-  console.log(player, match);
-
   if (!match) {
     matchPlayer.isOwner = true;
     return matchPlayer;
@@ -293,14 +290,10 @@ export function newMatchPlayerObj(player: Player, match?: Match): MatchPlayer {
     const team = teams[i];
     const fewestPlayersTeam = teams[matchPlayer.team];
 
-    console.log(team.length, fewestPlayersTeam.length);
-
     if (team.length < fewestPlayersTeam.length) {
       matchPlayer.team = i;
     }
   }
-
-  console.log(matchPlayer);
 
   return matchPlayer;
 }

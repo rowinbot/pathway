@@ -106,6 +106,12 @@ function onPlayerConnected(
     match.config
   );
 
+  updateMatchPlayerConnected(match.code, player.id, true);
+  io.to(match.code).emit(
+    ServerToClientEvent.MATCH_PLAYERS_UPDATED,
+    match.players
+  );
+
   // If match already started, send the board state (could be a re-join).
   if (match.started && match.matchState) {
     socket.emit(
@@ -115,12 +121,6 @@ function onPlayerConnected(
       match.matchState.currentTurn
     );
   }
-
-  updateMatchPlayerConnected(match.code, player.id, true);
-  io.to(match.code).emit(
-    ServerToClientEvent.MATCH_PLAYERS_UPDATED,
-    match.players
-  );
 
   socket.data = {
     matchCode: match.code,

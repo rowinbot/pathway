@@ -2,13 +2,17 @@
   import { loadPlayer } from "../../utils/services/player.service";
   import { type Socket, io } from "socket.io-client";
   import { onMount } from "svelte";
+  import type {
+    BoardState,
+    Player,
+    MatchConfig,
+    MatchPlayer,
+    MatchPlayerHand,
+    MatchCurrentTurn,
+    Card as CardObject,
+  } from "game-logic";
+
   import {
-    type BoardState,
-    type Player,
-    type MatchConfig,
-    type MatchPlayer,
-    type MatchPlayerHand,
-    type MatchCurrentTurn,
     buildBoard,
     MatchJoinStatus,
     CardNumber,
@@ -39,22 +43,14 @@
   let matchConfig: MatchConfig | null = null;
   let playerHand: MatchPlayerHand;
 
+  let lastPlayedCard: CardObject | null = null;
+
   $: currentMatchPlayer = findMatchPlayerById(player?.id, matchPlayers);
 
   $: matchCurrentTurnPlayer = findMatchPlayerById(
     matchCurrentTurn?.turnPlayerId,
     matchPlayers
   );
-
-  $: {
-    if (matchCurrentTurnPlayer) {
-      notifications.info(
-        "It's " +
-          (matchCurrentTurnPlayer.id === player.id ? "your" : "their") +
-          " turn"
-      );
-    }
-  }
 
   let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -82,21 +78,6 @@
         }
       });
 
-      socket.on(ServerToClientEvent.MATCH_STATE, (state, hand, currentTurn) => {
-        // If we get the board, match already started
-        matchStarted = true;
-        boardState = state;
-        matchCurrentTurn = currentTurn;
-        playerHand = hand;
-
-        notifications.send(
-          currentMatchPlayer
-            ? "You are playing with the " +
-                getMatchTeamName(currentMatchPlayer.team)
-            : "You are playing as @" + player.nickname
-        );
-      });
-
       socket.on(ServerToClientEvent.MATCH_CONFIG_UPDATED, (config) => {
         matchConfig = config;
       });
@@ -105,19 +86,41 @@
         matchPlayers = players;
       });
 
+      socket.on(ServerToClientEvent.MATCH_STATE, (state, hand, currentTurn) => {
+        // If we get the board, match already started
+        matchStarted = true;
+        boardState = state;
+        matchCurrentTurn = currentTurn;
+        playerHand = hand;
+
+        emitTurnNotification(currentTurn.turnPlayerId);
+        notifications.send(
+          currentMatchPlayer
+            ? "You are playing with the " +
+                getMatchTeamName(currentMatchPlayer.team)
+            : "You are playing as @" + player.nickname
+        );
+      });
+
       socket.on(ServerToClientEvent.TURN_TIMEOUT, (currentTurn) => {
         const lastTurnPlayer = findMatchPlayerById(
           currentTurn.turnPlayerId,
           matchPlayers
         )!;
 
-        notifications.danger(
-          'Turn timed out for "' +
-            lastTurnPlayer.nickname +
-            '" (' +
-            getMatchTeamName(lastTurnPlayer.team) +
-            ")"
-        );
+        const wasYourTurn = lastTurnPlayer.id === currentMatchPlayer?.id;
+
+        if (wasYourTurn) {
+          notifications.danger("Your turn timed out");
+        } else {
+          notifications.warning(
+            'Turn timed out for "' +
+              lastTurnPlayer.nickname +
+              '" (' +
+              getMatchTeamName(lastTurnPlayer.team) +
+              ")"
+          );
+        }
 
         matchCurrentTurn = currentTurn;
       });
@@ -127,11 +130,14 @@
         (movement, currentTurn) => {
           const { card, col, row, isPartOfASequence, team } = movement;
 
+          lastPlayedCard = card;
+
           boardState[row][col] = {
             team: cardNumber(card) === CardNumber.SingleJack ? null : team,
             isPartOfASequence: isPartOfASequence,
           };
           matchCurrentTurn = currentTurn;
+          emitTurnNotification(currentTurn.turnPlayerId);
         }
       );
 
@@ -150,6 +156,26 @@
     }
   });
 
+  function emitTurnNotification(currentTurnPlayerId: string) {
+    const matchCurrentTurnPlayer = findMatchPlayerById(
+      currentTurnPlayerId,
+      matchPlayers
+    )!;
+    const isYourTurn = matchCurrentTurnPlayer?.id === player.id;
+
+    if (matchCurrentTurnPlayer) {
+      if (isYourTurn) {
+        notifications.info("Your turn");
+      } else {
+        notifications.send(
+          `${matchCurrentTurnPlayer.nickname} (${getMatchTeamName(
+            matchCurrentTurnPlayer.team
+          )}) turn`
+        );
+      }
+    }
+  }
+
   function placeCard(event: CustomEvent<{ row: number; col: number }>) {
     socket.emit(
       ClientToServerEvent.MOVEMENT,
@@ -161,12 +187,12 @@
       (movementResult) => {
         if (movementResult.success && movementResult.card) {
           playerHand.cards = playerHand.cards.filter(
-            (card) => card.id !== movementResult.card!.id
+            (card) => card.uid !== movementResult.card!.uid
           );
+        }
 
-          if (movementResult.nextCard) {
-            playerHand.cards.push(movementResult.nextCard);
-          }
+        if (movementResult.nextCard) {
+          playerHand.cards.push(movementResult.nextCard);
         }
       }
     );
@@ -207,14 +233,14 @@
 
 <main class="pb-8 flex flex-col">
   <div class="border-b-[1px] border-blue-300 py-2 bg-blue-50">
-    <p class="text-slate-900 max-w-7xl w-full mx-auto px-8">
+    <p class="text-slate-900 max-w-5xl px-2 w-full mx-auto">
       <span class="text-blue-700">@{player?.nickname ?? "..."}</span>
     </p>
   </div>
 
-  <div class="pt-8 max-w-7xl w-full px-2 first-line:md:px-8 mx-auto">
+  <div class="pt-8 w-full mx-auto">
     <section class="space-y-4">
-      <header class="space-y-2">
+      <header class="space-y-2 max-w-5xl px-2 mx-auto">
         <h1 class="font-base text-5xl">Game</h1>
 
         <p class="text-2xl font-light">
@@ -239,6 +265,7 @@
             {matchCurrentTurnPlayer}
             {matchCurrentTurn}
             {playerHand}
+            {lastPlayedCard}
             on:pick-card={placeCard}
           />
         {:else}

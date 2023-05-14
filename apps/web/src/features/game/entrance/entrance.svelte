@@ -18,7 +18,7 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="max-w-5xl px-2 mx-auto space-y-6">
   <section class="space-y-2">
     <h2 class="text-lg font-bold">Teams</h2>
 

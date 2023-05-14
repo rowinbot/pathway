@@ -24,7 +24,7 @@
 </script>
 
 <ul
-  class="grid grid-cols-10 gap-1 md:gap-2 py-5 flex-1 max-w-5xl w-full mx-auto"
+  class="grid grid-cols-10 gap-1 md:gap-2 pt-5 flex-1 max-w-5xl w-full mx-auto"
 >
   {#each staticBoardRows as row, rowI}
     {#each row as card, colI}
