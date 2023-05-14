@@ -30,6 +30,7 @@ export interface LastMovement extends Movement {
    */
   card: Card;
   team: MatchTeamI;
+  isPartOfASequence: boolean;
 }
 
 export enum MatchCouldNotStartReason {

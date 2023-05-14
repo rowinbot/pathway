@@ -149,7 +149,7 @@ export function testHandCardToPositionInBoard(
   const cardAtPos = getCardAtPos(row, col);
   if (!cardAtPos) return false;
 
-  const positionState = boardState[row][col];
+  const positionState = boardState[row][col].team;
   const isPositionFree = positionState === null;
   const isPositionOccupiedByPlayerTeam = positionState === playerTeam;
 

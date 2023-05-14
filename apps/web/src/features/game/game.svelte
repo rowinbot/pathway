@@ -125,10 +125,12 @@
       socket.on(
         ServerToClientEvent.PLAYER_MOVEMENT,
         (movement, currentTurn) => {
-          const { card, col, row, team } = movement;
+          const { card, col, row, isPartOfASequence, team } = movement;
 
-          boardState[row][col] =
-            cardNumber(card) === CardNumber.SingleJack ? null : team;
+          boardState[row][col] = {
+            team: cardNumber(card) === CardNumber.SingleJack ? null : team,
+            isPartOfASequence: isPartOfASequence,
+          };
           matchCurrentTurn = currentTurn;
         }
       );

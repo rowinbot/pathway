@@ -75,6 +75,7 @@ export function testAndApplyMatchPlayerMovement(
   movement: Movement
 ): {
   isMovementValid: boolean;
+  formedANewSequence: boolean;
   card: Card | null;
   nextCard: Card | null;
 } {
@@ -82,6 +83,7 @@ export function testAndApplyMatchPlayerMovement(
   if (!matchState)
     return {
       isMovementValid: false,
+      formedANewSequence: false,
       card: null,
       nextCard: null,
     };
@@ -93,6 +95,7 @@ export function testAndApplyMatchPlayerMovement(
     // Not their turn
     return {
       isMovementValid: false,
+      formedANewSequence: false,
       card: null,
       nextCard: null,
     };
@@ -109,6 +112,7 @@ export function testAndApplyMatchPlayerMovement(
     // Invalid movement
     return {
       isMovementValid: false,
+      formedANewSequence: false,
       card: null,
       nextCard: null,
     };
@@ -125,12 +129,17 @@ export function testAndApplyMatchPlayerMovement(
     playerHand.cards.push(nextCard);
   }
 
+  const formedANewSequence = false;
+
   // Add card to board
-  matchState.boardState[movement.row][movement.col] =
-    cardNumber(card) === CardNumber.SingleJack ? null : matchPlayer.team;
+  matchState.boardState[movement.row][movement.col] = {
+    team: cardNumber(card) === CardNumber.SingleJack ? null : matchPlayer.team,
+    isPartOfASequence: formedANewSequence,
+  };
 
   return {
     isMovementValid: true,
+    formedANewSequence: formedANewSequence,
     card,
     nextCard,
   };

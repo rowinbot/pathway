@@ -149,11 +149,8 @@ function setupClientToServerEvents(
   io: AppServer
 ) {
   socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
-    const { isMovementValid, card, nextCard } = testAndApplyMatchPlayerMovement(
-      match.code,
-      player.id,
-      movement
-    );
+    const { isMovementValid, formedANewSequence, card, nextCard } =
+      testAndApplyMatchPlayerMovement(match.code, player.id, movement);
 
     if (isMovementValid && card) {
       setupMatchTurnTimer(match, io);
@@ -163,6 +160,7 @@ function setupClientToServerEvents(
         ServerToClientEvent.PLAYER_MOVEMENT,
         {
           ...movement,
+          isPartOfASequence: formedANewSequence,
           card,
           team: player.team,
         },
