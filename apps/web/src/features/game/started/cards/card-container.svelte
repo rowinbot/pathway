@@ -1,9 +1,10 @@
 <script lang="ts">
-  const width = 240;
-  const height = 336 / 1.2;
+  import { CARD_HEIGHT, CARD_WIDTH } from "../../../../utils/svg";
+
+  const width = CARD_WIDTH;
+  const height = CARD_HEIGHT;
 
   export let bgColor: string = "#fff";
-  export let disabled: boolean = false;
 </script>
 
 <button on:click>

@@ -70,10 +70,13 @@
     </div>
   </section>
 
-  <PlayerHand
-    {playerHand}
-    {lastPlayedCard}
-    bind:showHintsForCard
-    bind:showAllHints
-  />
+  {#if currentMatchPlayer}
+    <PlayerHand
+      {playerHand}
+      {lastPlayedCard}
+      playerTeam={currentMatchPlayer.team}
+      bind:showHintsForCard
+      bind:showAllHints
+    />
+  {/if}
 </div>

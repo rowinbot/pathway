@@ -58,7 +58,6 @@
 
 <CardContainer
   bgColor={teamCardHighlightColor(occupiedByTeam)}
-  {disabled}
   on:click={onPlaceCard}
   on:keydown={onPlaceCard}
 >

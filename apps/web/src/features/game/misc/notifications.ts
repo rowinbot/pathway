@@ -26,24 +26,45 @@ function createNotificationStore(defaultTimeout = TIMEOUT) {
     });
   }
 
-  let timers = [];
+  const timersWritable = writable(
+    {} as Record<string, ReturnType<typeof setTimeout>>
+  );
+
+  function addTimer(
+    id: string,
+    timeout: number,
+    timers: Record<string, ReturnType<typeof setTimeout>>
+  ) {
+    timers[id] = setTimeout(() => {
+      _notifications.update((state) => {
+        state.shift();
+        timersWritable.update((t) => {
+          delete t[id];
+
+          return t;
+        });
+
+        return state;
+      });
+    }, timeout);
+  }
 
   const notifications = derived(_notifications, ($_notifications, set) => {
     set($_notifications);
 
     if ($_notifications.length > 0) {
-      const timer = setTimeout(() => {
-        _notifications.update((state) => {
-          state.shift();
-          return state;
-        });
-      }, $_notifications[0].timeout);
+      timersWritable.update((timers) => {
+        for (const notification of $_notifications) {
+          if (!(notification.id in timers)) {
+            addTimer(notification.id, notification.timeout, timers);
+          }
+        }
 
-      return () => {
-        clearTimeout(timer);
-      };
+        return timers;
+      });
     }
   });
+
   const { subscribe } = notifications;
 
   return {

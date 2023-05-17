@@ -5,6 +5,7 @@ import {
   cardIsJack,
   cardNumber,
   getCards,
+  isEmptyCard,
   staticBoardRows,
 } from "./cards";
 import { Player } from "./player";
@@ -104,6 +105,7 @@ export const DEFAULT_ROOM_CONFIG = {
   maxPlayers: 4,
 };
 
+export const CARDS_TIL_SEQUENCE = 5;
 export const CARDS_PER_PLAYER = 7;
 export const MAX_MATCH_TIME_SECONDS = 60 * 60; // 1 hour
 
@@ -287,33 +289,152 @@ export function getCardsShuffled(): Card[] {
   return cards.sort(() => Math.random() - 0.5);
 }
 
-/**
- * Checks if a team made a sequence by placing a card in a given position.
- * @returns boolean - true if the team made a **new** sequence, false otherwise. This value should be used to set the board position to isPartOfASequence:true.
- */
+interface NewSequenceBounds {
+  startRow: number;
+  endRow: number;
+  startCol: number;
+  endCol: number;
+  sequencesCount: number;
+}
+
+export function findNewSequenceFromPosition(
+  boardState: BoardState,
+  row: number,
+  col: number,
+  team: MatchTeamI,
+  getNextPos: (
+    row: number,
+    col: number,
+    goingBackwards: boolean
+  ) => [number, number]
+): NewSequenceBounds | null {
+  if (boardState[row][col].isPartOfASequence) return null;
+
+  let cardsForSequence = 0;
+
+  let sequenceStartRow = row;
+  let sequenceStartCol = col;
+
+  let sequenceEndRow = row;
+  let sequenceEndCol = col;
+
+  let goingBackwards = true;
+
+  let currentRow = row;
+  let currentCol = col;
+
+  while (
+    currentRow >= 0 &&
+    currentCol >= 0 &&
+    currentRow < 10 &&
+    currentCol < 10
+  ) {
+    [currentRow, currentCol] = getNextPos(
+      currentRow,
+      currentCol,
+      goingBackwards
+    );
+
+    const stateAtPos = boardState[currentRow][currentCol];
+    const cardAtPos = staticBoardRows[currentRow][currentCol];
+
+    const couldCountForSequence =
+      isEmptyCard(cardAtPos) || stateAtPos.team === team;
+
+    // If position is filled by team or empty card (intrinsic part of sequence), mark as start of sequence
+    if (goingBackwards) {
+      if (isEmptyCard(cardAtPos) || stateAtPos.team === team) {
+        sequenceStartRow = currentRow;
+        sequenceStartCol = currentCol;
+      } else {
+        goingBackwards = false;
+        currentRow = row;
+        currentCol = col;
+      }
+      // going forward :)
+    } else {
+      if (couldCountForSequence) {
+        sequenceEndRow = currentRow;
+        sequenceEndCol = currentCol;
+      } else {
+        // If we're going forward and the card can't count for the sequence, break!
+        break;
+      }
+    }
+
+    if (couldCountForSequence) {
+      cardsForSequence++;
+    }
+  }
+
+  if (CARDS_TIL_SEQUENCE % cardsForSequence === 0) {
+    // There might be more than one sequence in the same direction
+    const sequencesCount = cardsForSequence / CARDS_TIL_SEQUENCE;
+
+    return {
+      startRow: sequenceStartRow,
+      startCol: sequenceStartCol,
+      endRow: sequenceEndRow,
+      endCol: sequenceEndCol,
+      sequencesCount,
+    };
+  }
+
+  return null;
+}
+
+export function isNotNull<T>(value: T | null): value is T {
+  return value !== null;
+}
+
 export function checkNewSequencesForMove(
   boardState: BoardState,
   row: number,
   col: number,
   team: MatchTeamI
-): boolean {
-  if (boardState[row][col].isPartOfASequence) return false;
+): NewSequenceBounds[] {
+  const sequences: NewSequenceBounds[] = [];
 
-  // Start to the right
-  let nToSequence = 1; // Card at position can already be part of the sequence
-  let nFromPos = 1; // Start looking for sequences to the right of the position
-  let direction = 1;
+  if (boardState[row][col].isPartOfASequence) return sequences; // No new sequences if the card is already part of a sequence
 
-  // Check horizontal sequence
-  while (true) {
-    const stateAtPos = boardState[row][col + nFromPos * direction];
-
-    const validForNewSequence =
-      stateAtPos.team === team && !stateAtPos.isPartOfASequence;
-
-    if (validForNewSequence) {
-    }
-  }
-
-  return false;
+  return [
+    // Horizontal sequence (top to bottom)
+    findNewSequenceFromPosition(
+      boardState,
+      row,
+      col,
+      team,
+      (row, col, goingBackwards) => [row, col + (goingBackwards ? -1 : 1)]
+    ),
+    // Vertical sequence (left to right)
+    findNewSequenceFromPosition(
+      boardState,
+      row,
+      col,
+      team,
+      (row, col, goingBackwards) => [row + (goingBackwards ? -1 : 1), col]
+    ),
+    // Diagonal sequence (top-left to bottom-right)
+    findNewSequenceFromPosition(
+      boardState,
+      row,
+      col,
+      team,
+      (row, col, goingBackwards) => [
+        row + (goingBackwards ? -1 : 1),
+        col + (goingBackwards ? -1 : 1),
+      ]
+    ),
+    // Diagonal sequence (top-right to bottom-left)
+    findNewSequenceFromPosition(
+      boardState,
+      row,
+      col,
+      team,
+      (row, col, goingBackwards) => [
+        row + (goingBackwards ? -1 : 1),
+        col + (goingBackwards ? 1 : -1),
+      ]
+    ),
+  ].filter(isNotNull);
 }

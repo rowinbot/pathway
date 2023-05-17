@@ -1,11 +1,18 @@
 <script lang="ts">
-  import type { MatchPlayerHand, Card as CardObject } from "game-logic";
+  import type {
+    MatchPlayerHand,
+    Card as CardObject,
+    MatchTeamI,
+  } from "game-logic";
   import Card from "./card.svelte";
   import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
   import CardContainer from "./cards/card-container.svelte";
   import Coin from "./cards/coin.svelte";
+  import TeamCoins from "./cards/team-coins.svelte";
+  import { teamTokenColor } from "../../../utils/match-team";
 
+  export let playerTeam: MatchTeamI;
   export let playerHand: MatchPlayerHand;
   export let lastPlayedCard: CardObject | null = null;
   export let showHintsForCard: CardObject | null = null;
@@ -52,7 +59,9 @@
       </CardContainer>
     </li>
 
-    <li />
+    <li>
+      <TeamCoins color={teamTokenColor(playerTeam)} />
+    </li>
 
     {#if lastPlayedCard}
       <li>
