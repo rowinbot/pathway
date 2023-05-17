@@ -62,6 +62,7 @@ export interface MatchState {
   currentTurn: MatchCurrentTurn;
   boardState: BoardState;
   playerHands: Record<string, MatchPlayerHand>;
+  teamSequenceCount: Record<MatchTeamI, number>;
   cardsDeck: Card[];
 }
 
@@ -284,4 +285,35 @@ export function getCardsShuffled(): Card[] {
   const cards = getCards();
 
   return cards.sort(() => Math.random() - 0.5);
+}
+
+/**
+ * Checks if a team made a sequence by placing a card in a given position.
+ * @returns boolean - true if the team made a **new** sequence, false otherwise. This value should be used to set the board position to isPartOfASequence:true.
+ */
+export function checkNewSequencesForMove(
+  boardState: BoardState,
+  row: number,
+  col: number,
+  team: MatchTeamI
+): boolean {
+  if (boardState[row][col].isPartOfASequence) return false;
+
+  // Start to the right
+  let nToSequence = 1; // Card at position can already be part of the sequence
+  let nFromPos = 1; // Start looking for sequences to the right of the position
+  let direction = 1;
+
+  // Check horizontal sequence
+  while (true) {
+    const stateAtPos = boardState[row][col + nFromPos * direction];
+
+    const validForNewSequence =
+      stateAtPos.team === team && !stateAtPos.isPartOfASequence;
+
+    if (validForNewSequence) {
+    }
+  }
+
+  return false;
 }
