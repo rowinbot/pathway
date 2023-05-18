@@ -4,9 +4,13 @@
   "private": true,
   "type": "module",
   "main": "./index.ts",
+  "scripts": {
+    "test": "vitest"
+  },
   "dependencies": {
     "tsconfig": "workspace:*",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "vitest": "^0.31.1"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.1"
