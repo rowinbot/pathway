@@ -231,7 +231,9 @@
 
   function copyMatchCode() {
     try {
-      navigator.clipboard.writeText(window.location.host + "/game/" + gameId);
+      const linkToMatch = window.location.host + "/game/" + gameId;
+      navigator.clipboard.writeText(linkToMatch);
+      notifications.send("Copied match code to clipboard: " + linkToMatch);
     } catch (err) {
       console.log(err);
     }
