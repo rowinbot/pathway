@@ -230,12 +230,18 @@
   }
 
   function copyMatchCode() {
+    const linkToMatch = window.location.host + "/game/" + gameId;
+
     try {
-      const linkToMatch = window.location.host + "/game/" + gameId;
       navigator.clipboard.writeText(linkToMatch);
-      notifications.send("Copied match code to clipboard: " + linkToMatch);
+      notifications.send("Copied match link to clipboard: " + linkToMatch);
     } catch (err) {
       console.log(err);
+
+      notifications.warning(
+        "Couldn't copy match link to clipboard: " + linkToMatch,
+        10000
+      );
     }
   }
 </script>
