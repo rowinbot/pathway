@@ -15,6 +15,7 @@ import {
   Match,
   MatchJoinStatus,
   MatchPlayer,
+  TeamI,
   testTeamsLayout,
 } from "game-logic";
 import type { Server as HttpServer } from "http";
@@ -173,6 +174,18 @@ function setupClientToServerEvents(
       card,
       nextCard,
     });
+
+    // After notifying the client, check if the game is over.
+
+    if (
+      player &&
+      match.matchState &&
+      newSequences.length > 0 &&
+      match.matchState.teamSequenceCount[player.team] >= 2
+    ) {
+      cleanupGame(match, io, player.team);
+      return;
+    }
   });
 
   socket.on(ClientToServerEvent.START_GAME, async (callback) => {
@@ -229,15 +242,20 @@ function setupMatchStaleGameTimer(match: Match, io: AppServer) {
     delete matchCodeToStaleGameTimer[match.code];
   }
 
-  matchCodeToStaleGameTimer[match.code] = setTimeout(() => {
-    io.to(match.code).emit(ServerToClientEvent.MATCH_FINISHED, null);
-    deleteMatch(match.code);
+  matchCodeToStaleGameTimer[match.code] = setTimeout(
+    () => cleanupGame(match, io),
+    MAX_MATCH_TIME_SECONDS * 1000
+  );
+}
 
-    // Clear turn timer.
-    clearTimeout(matchCodeToTurnTimer[match.code]);
-    delete matchCodeToTurnTimer[match.code];
+function cleanupGame(match: Match, io: AppServer, winner: TeamI | null = null) {
+  io.to(match.code).emit(ServerToClientEvent.MATCH_FINISHED, winner);
+  deleteMatch(match.code);
 
-    // Disconnect all sockets in the room.
-    io.to(match.code).disconnectSockets();
-  }, MAX_MATCH_TIME_SECONDS * 1000);
+  // Clear turn timer.
+  clearTimeout(matchCodeToTurnTimer[match.code]);
+  delete matchCodeToTurnTimer[match.code];
+
+  // Disconnect all sockets in the room.
+  io.to(match.code).disconnectSockets();
 }

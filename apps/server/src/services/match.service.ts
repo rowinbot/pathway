@@ -22,6 +22,7 @@ import {
   cardNumber,
   testNewSequencesForMovement,
   updateBoardStateFromNewSequences,
+  updateTeamSequencesCountFromNewSequenceBounds,
 } from "game-logic";
 
 const codeToMatch = {} as Record<Match["code"], Match>;
@@ -149,6 +150,11 @@ export function testAndApplyMatchPlayerMovement(
   };
 
   updateBoardStateFromNewSequences(matchState.boardState, newSequences);
+  updateTeamSequencesCountFromNewSequenceBounds(
+    matchState.teamSequenceCount,
+    matchPlayer.team,
+    newSequences
+  );
 
   return {
     isMovementValid: true,

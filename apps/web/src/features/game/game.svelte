@@ -148,12 +148,13 @@
       );
 
       socket.on(ServerToClientEvent.MATCH_FINISHED, (winner) => {
-        if (winner) {
+        if (winner !== null) {
           alert("Winner: " + getMatchTeamName(winner));
         } else {
           alert("Match is a draw");
         }
-        goBackHome();
+
+        matchCurrentTurn = null;
       });
 
       socket.connect();

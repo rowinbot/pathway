@@ -326,10 +326,9 @@ export function findNewSequenceFromPosition(
     [currentRow, currentCol] = getNextPos(currentRow, currentCol, false);
   }
 
-  const hasOneSequence = cardsForSequence >= CARDS_TIL_SEQUENCE;
   const hasTwoSequences = cardsForSequence >= CARDS_TIL_SEQUENCE + 4;
 
-  if (hasOneSequence || hasTwoSequences) {
+  if (cardsForSequence === 5 || cardsForSequence >= 9) {
     // There might be more than one sequence in the same direction
     const sequencesCount = hasTwoSequences ? 2 : 1;
 
@@ -421,4 +420,16 @@ export function updateBoardStateFromNewSequences(
       else if (row > newSequence.endRow) row--;
     }
   }
+}
+
+export function updateTeamSequencesCountFromNewSequenceBounds(
+  teamSequenceCount: Record<TeamI, number>,
+  team: TeamI,
+  newSequenceBounds: NewSequenceBounds[]
+) {
+  for (let i = 0; i < newSequenceBounds.length; i++) {
+    teamSequenceCount[team] += 1;
+  }
+
+  return teamSequenceCount;
 }
