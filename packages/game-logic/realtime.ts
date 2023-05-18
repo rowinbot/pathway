@@ -1,12 +1,13 @@
 import { BoardState } from "./board";
 import { Card } from "./cards";
+import { TeamI } from "./team";
+
 import {
   MatchCurrentTurn,
   MatchJoinStatus,
   MatchPlayer,
   Movement,
   MatchConfig,
-  MatchTeamI,
   MatchPlayerHand,
   NewSequenceBounds,
 } from "./match";
@@ -30,7 +31,7 @@ export interface LastMovement extends Movement {
    * The card that was placed on the board.
    */
   card: Card;
-  team: MatchTeamI;
+  team: TeamI;
   newSequences: NewSequenceBounds[];
 }
 
@@ -78,7 +79,7 @@ export enum ServerToClientEvent {
 
   /**
    * Fires when the match finishes under any of the following conditions:
-   * 1. When a team wins the match.                                (winner === MatchTeamI)
+   * 1. When a team wins the match.                                (winner === TeamI)
    * 2. When no movements are left and the match is a draw.        (winner === null)
    * 3. When the match is stale (no movements in $MAX_MATCH_TIME_SECONDS). (winner === null)
    */
@@ -101,7 +102,7 @@ export interface ServerToClientEvents {
     currentTurn: MatchCurrentTurn
   ): void;
   [ServerToClientEvent.TURN_TIMEOUT](nextTurn: MatchCurrentTurn): void;
-  [ServerToClientEvent.MATCH_FINISHED](winner: MatchTeamI | null): void;
+  [ServerToClientEvent.MATCH_FINISHED](winner: TeamI | null): void;
 }
 
 export enum ClientToServerEvent {

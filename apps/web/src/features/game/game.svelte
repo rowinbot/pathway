@@ -268,6 +268,7 @@
             {boardState}
             {matchConfig}
             {currentMatchPlayer}
+            {matchPlayers}
             {matchCurrentTurnPlayer}
             {matchCurrentTurn}
             {playerHand}

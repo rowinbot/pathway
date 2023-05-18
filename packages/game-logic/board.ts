@@ -1,8 +1,8 @@
-import { MatchTeamI } from "./match";
+import { TeamI } from "./team";
 import { TupleMatrix } from "./types";
 
-type MaybeMatchTeamI = MatchTeamI | null;
-type BoardPositionState = { team: MaybeMatchTeamI; isPartOfASequence: boolean };
+type MaybeTeamI = TeamI | null;
+type BoardPositionState = { team: MaybeTeamI; isPartOfASequence: boolean };
 export type BoardState = TupleMatrix<TupleMatrix<BoardPositionState, 10>, 10>;
 
 export function buildBoard() {

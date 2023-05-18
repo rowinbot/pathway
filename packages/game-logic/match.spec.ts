@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildBoard } from "./board";
+import { TeamI } from "./team";
 import {
-  MatchTeamI,
   testNewSequencesForMovement,
   updateBoardStateFromNewSequences,
 } from "./match";
@@ -9,7 +9,7 @@ import {
 describe("finds new sequences from movement", () => {
   it("horizontal - top-left corner", async () => {
     const boardState = buildBoard();
-    const team = MatchTeamI.One;
+    const team = TeamI.One;
 
     boardState[0][4] = { team, isPartOfASequence: false };
     boardState[1][4] = { team, isPartOfASequence: false };

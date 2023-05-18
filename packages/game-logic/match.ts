@@ -8,7 +8,7 @@ import {
   isEmptyCard,
   staticBoardRows,
 } from "./cards";
-import { Player } from "./player";
+import { TeamI, TeamPlayer, getTeamsPlayers } from "./team";
 
 export interface Match {
   code: string;
@@ -38,14 +38,8 @@ export interface Match {
  * - 3 * 3 * 3, (9 players)
  * - 4 * 4 * 4  (12 players)
  */
-export enum MatchTeamI {
-  One = 0,
-  Two = 1,
-  Three = 2,
-}
 
-export interface MatchPlayer extends Player {
-  team: MatchTeamI;
+export interface MatchPlayer extends TeamPlayer {
   isOwner: boolean;
 
   /**
@@ -63,7 +57,7 @@ export interface MatchState {
   currentTurn: MatchCurrentTurn;
   boardState: BoardState;
   playerHands: Record<string, MatchPlayerHand>;
-  teamSequenceCount: Record<MatchTeamI, number>;
+  teamSequenceCount: Record<TeamI, number>;
   cardsDeck: Card[];
 }
 
@@ -152,7 +146,7 @@ export function getCardAtPos(row: number, col: number): Card | null {
 
 export function testHandCardToPositionInBoard(
   boardState: BoardState,
-  playerTeam: MatchTeamI,
+  playerTeam: TeamI,
   playerHandCard: Card,
   row: number,
   col: number
@@ -189,7 +183,7 @@ export function testHandCardToPositionInBoard(
 
 export function getMatchingHandCardIndexToPositionInBoard(
   boardState: BoardState,
-  playerTeam: MatchTeamI,
+  playerTeam: TeamI,
   playerHand: MatchPlayerHand,
   row: number,
   col: number,
@@ -242,53 +236,8 @@ export function getNextMatchTurnPlayerId(
   return playerIds[(currentTurnPlayerIdI + 1) % playerIds.length];
 }
 
-export function getMatchTeams(matchPlayers: MatchPlayer[]) {
-  const teams: [MatchPlayer[], MatchPlayer[], MatchPlayer[]] = [[], [], []];
-
-  for (const player of matchPlayers) {
-    teams[player.team].push(player);
-  }
-
-  return teams;
-}
-
-/**
- * Tests if the teams layout is valid based on the number of players per team.
- */
-export function testTeamsLayout(matchPlayers: MatchPlayer[]) {
-  const teams = getMatchTeams(matchPlayers);
-
-  let teamsWithPlayers = 0;
-
-  for (const team of teams) {
-    if (team.length > 0) {
-      teamsWithPlayers++;
-    }
-  }
-
-  // The game requires at least two teams with players
-  if (teamsWithPlayers < 2) return false;
-
-  // Two teams combinations
-  if (
-    teamsWithPlayers === 2 &&
-    teams[MatchTeamI.One].length >= 1 &&
-    teams[MatchTeamI.One].length <= 4 &&
-    teams[MatchTeamI.One].length === teams[MatchTeamI.Two].length
-  ) {
-    return true;
-  }
-
-  // Three teams combinations
-  if (
-    teamsWithPlayers === 3 &&
-    teams[MatchTeamI.One].length >= 1 &&
-    teams[MatchTeamI.One].length <= 4 &&
-    teams[MatchTeamI.One].length === teams[MatchTeamI.Two].length &&
-    teams[MatchTeamI.One].length === teams[MatchTeamI.Three].length
-  ) {
-    return true;
-  }
+export function getMatchTeamsPlayers(matchPlayers: MatchPlayer[]) {
+  return getTeamsPlayers(matchPlayers).filter((t) => t.length > 0);
 }
 
 export function getCardsShuffled(): Card[] {
@@ -301,7 +250,7 @@ export function findNewSequenceFromPosition(
   boardState: BoardState,
   row: number,
   col: number,
-  team: MatchTeamI,
+  team: TeamI,
   getNextPos: (
     row: number,
     col: number,
@@ -404,7 +353,7 @@ export function testNewSequencesForMovement(
   boardState: BoardState,
   row: number,
   col: number,
-  team: MatchTeamI
+  team: TeamI
 ): NewSequenceBounds[] {
   const sequences: NewSequenceBounds[] = [];
 

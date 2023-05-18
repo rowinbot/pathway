@@ -5,7 +5,7 @@
     RedCardKind,
     cardKind,
     cardNumber,
-    MatchTeamI,
+    TeamI,
   } from "game-logic";
   import CardContainer from "./cards/card-container.svelte";
   import Clover from "./cards/clover.svelte";
@@ -20,7 +20,7 @@
   export let row: number;
   export let col: number;
   export let disabled: boolean;
-  export let occupiedByTeam: MatchTeamI | null;
+  export let occupiedByTeam: TeamI | null;
   export let isPartOfASequence = false;
 
   $: cardKindOpacity = disabled ? 0.25 : 1;

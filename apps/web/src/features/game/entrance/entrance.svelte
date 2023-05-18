@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type MatchPlayer, getMatchTeams } from "game-logic";
+  import { type MatchPlayer, getMatchTeamsPlayers } from "game-logic";
   import { createEventDispatcher } from "svelte";
   import Icon from "@iconify/svelte";
   import { getMatchTeamName, teamHeaderColor } from "../../../utils/match-team";
@@ -11,7 +11,7 @@
     "start-game": void;
   }>();
 
-  $: matchTeams = getMatchTeams(matchPlayers);
+  $: matchTeams = getMatchTeamsPlayers(matchPlayers);
 
   function startGame() {
     dispatch("start-game");

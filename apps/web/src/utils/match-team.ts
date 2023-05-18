@@ -1,47 +1,60 @@
-import { MatchTeamI } from "game-logic";
+import { TeamI } from "game-logic";
 
-export function getMatchTeamName(teamI: MatchTeamI) {
+export function getMatchTeamName(teamI: TeamI) {
   switch (teamI) {
-    case MatchTeamI.One:
+    case TeamI.One:
       return "Team Red";
-    case MatchTeamI.Two:
+    case TeamI.Two:
       return "Team Blue";
-    case MatchTeamI.Three:
+    case TeamI.Three:
       return "Team Green";
   }
 }
 
-export function teamCardHighlightColor(team: MatchTeamI | null) {
+export function teamCardHighlightColor(team: TeamI | null) {
   switch (team) {
-    case MatchTeamI.One:
+    case TeamI.One:
       return "#fff";
-    case MatchTeamI.Two:
+    case TeamI.Two:
       return "#fff";
-    case MatchTeamI.Three:
+    case TeamI.Three:
       return "#fff";
     default:
       return "#fff";
   }
 }
 
-export function teamHeaderColor(team: MatchTeamI) {
+export function teamTurnHighlightColor(team: TeamI | null) {
   switch (team) {
-    case MatchTeamI.One:
+    case TeamI.One:
+      return "#f09999";
+    case TeamI.Two:
+      return "#9999f0";
+    case TeamI.Three:
+      return "#99f099";
+    default:
+      return "#fff";
+  }
+}
+
+export function teamHeaderColor(team: TeamI) {
+  switch (team) {
+    case TeamI.One:
       return "#A00";
-    case MatchTeamI.Two:
+    case TeamI.Two:
       return "#00f";
-    case MatchTeamI.Three:
+    case TeamI.Three:
       return "#080";
   }
 }
 
-export function teamTokenColor(team: MatchTeamI) {
+export function teamTokenColor(team: TeamI) {
   switch (team) {
-    case MatchTeamI.One:
+    case TeamI.One:
       return "#A00";
-    case MatchTeamI.Two:
+    case TeamI.Two:
       return "#00f";
-    case MatchTeamI.Three:
+    case TeamI.Three:
       return "#0f0";
   }
 }

@@ -11,11 +11,13 @@
   import { createEventDispatcher } from "svelte";
   import PlayerHand from "./player-hand.svelte";
   import TurnTimer from "./turn-timer.svelte";
+  import Teams from "./teams.svelte";
 
   export let boardState: BoardState;
   export let matchCurrentTurn: MatchCurrentTurn | null = null;
   export let matchCurrentTurnPlayer: MatchPlayer | null = null;
   export let currentMatchPlayer: MatchPlayer | null = null;
+  export let matchPlayers: MatchPlayer[];
   export let matchConfig: MatchConfig;
   export let playerHand: MatchPlayerHand;
   export let lastPlayedCard: CardObject | null = null;
@@ -74,4 +76,6 @@
       bind:showAllHints
     />
   {/if}
+
+  <Teams {matchPlayers} {currentMatchPlayer} {matchCurrentTurnPlayer} />
 </div>

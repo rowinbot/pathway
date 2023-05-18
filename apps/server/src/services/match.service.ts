@@ -13,8 +13,8 @@ import {
   CardNumber,
   DEFAULT_ROOM_CONFIG,
   getNextMatchTurnPlayerId,
-  getMatchTeams,
-  MatchTeamI,
+  getMatchTeamsPlayers,
+  TeamI,
   CARDS_PER_PLAYER,
   getCardsShuffled,
   cardIsJack,
@@ -214,9 +214,9 @@ export function startMatch(matchCode: string): boolean {
       turnPlayerId: match.players[0].id,
     },
     teamSequenceCount: {
-      [MatchTeamI.One]: 0,
-      [MatchTeamI.Two]: 0,
-      [MatchTeamI.Three]: 0,
+      [TeamI.One]: 0,
+      [TeamI.Two]: 0,
+      [TeamI.Three]: 0,
     },
   };
 
@@ -287,14 +287,14 @@ export function joinMatch(matchCode: string, player: Player): MatchJoinStatus {
 /**
  * Creates a new match player object.
  * If match is provided, it will assign the player to the team with the fewest players.
- * When match is not provided, the player is taken as the owner and assigned to `MatchTeamI.One`.
+ * When match is not provided, the player is taken as the owner and assigned to `TeamI.One`.
  */
 export function newMatchPlayerObj(player: Player, match?: Match): MatchPlayer {
   const matchPlayer = {
     ...player,
     isOwner: false,
     isConnected: false,
-    team: MatchTeamI.One,
+    team: TeamI.One,
   };
 
   if (!match) {
@@ -302,7 +302,7 @@ export function newMatchPlayerObj(player: Player, match?: Match): MatchPlayer {
     return matchPlayer;
   }
 
-  const teams = getMatchTeams(match.players);
+  const teams = getMatchTeamsPlayers(match.players);
 
   for (let i = 0; i < teams.length; i++) {
     const team = teams[i];
