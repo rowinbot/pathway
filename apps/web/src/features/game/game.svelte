@@ -230,7 +230,12 @@
   }
 
   function copyMatchCode() {
-    const linkToMatch = window.location.host + "/game/" + gameId;
+    const linkToMatch =
+      window.location.protocol +
+      "//" +
+      window.location.host +
+      "/game/" +
+      gameId;
 
     try {
       navigator.clipboard.writeText(linkToMatch);
