@@ -1,3 +1,10 @@
 {
-  "extends": "tsconfig/tsconfig.astro.json"
+  "extends": "tsconfig/tsconfig.astro.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "es2020",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
 }

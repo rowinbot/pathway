@@ -1,7 +1,7 @@
 /** @jsxImportSource solid-js */
 
 import { Show, createResource } from "solid-js";
-import { loadPlayer } from "../../utils/services/player.service";
+import { loadPlayer } from "@/utils/services/player.service";
 import type { Match } from "game-logic";
 import { JoinOrCreateMatch } from "./join-or-create-match";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DEFAULT_ROOM_CONFIG } from "game-logic";
-  import { arc } from "../../../../utils/svg";
+  import { arc } from "@/utils/svg";
   import { onDestroy } from "svelte";
 
   export let durationInSeconds: number =

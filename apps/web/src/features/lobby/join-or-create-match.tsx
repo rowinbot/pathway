@@ -2,7 +2,7 @@
 
 import { createInputMask, maskArrayToFn } from "@solid-primitives/input-mask";
 import { Show, createSignal } from "solid-js";
-import { createMatch, joinMatch } from "../../utils/services/match.service";
+import { createMatch, joinMatch } from "@/utils/services/match.service";
 import { Match, MatchJoinStatus, Player } from "game-logic";
 
 const MATCH_CODE_LENGTH = 6;

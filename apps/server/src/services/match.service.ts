@@ -1,8 +1,13 @@
 import { Match, MatchPlayer, MatchJoinStatus } from "@/interfaces/match";
+import type {
+  Movement,
+  Player,
+  MatchPlayerHand,
+  NewSequenceBounds,
+  Card,
+  MatchState,
+} from "game-logic";
 import {
-  type Movement,
-  type Player,
-  type MatchPlayerHand,
   buildBoard,
   getMatchingHandCardIndexToPositionInBoard,
   CardNumber,
@@ -10,13 +15,13 @@ import {
   getNextMatchTurnPlayerId,
   getMatchTeams,
   MatchTeamI,
-  Card,
   CARDS_PER_PLAYER,
   getCardsShuffled,
-  MatchState,
   cardIsJack,
   staticBoardRows,
   cardNumber,
+  testNewSequencesForMovement,
+  updateBoardStateFromNewSequences,
 } from "game-logic";
 
 const codeToMatch = {} as Record<Match["code"], Match>;
@@ -75,7 +80,7 @@ export function testAndApplyMatchPlayerMovement(
   movement: Movement
 ): {
   isMovementValid: boolean;
-  formedANewSequence: boolean;
+  newSequences: NewSequenceBounds[];
   card: Card | null;
   nextCard: Card | null;
 } {
@@ -83,7 +88,7 @@ export function testAndApplyMatchPlayerMovement(
   if (!matchState)
     return {
       isMovementValid: false,
-      formedANewSequence: false,
+      newSequences: [],
       card: null,
       nextCard: null,
     };
@@ -95,7 +100,7 @@ export function testAndApplyMatchPlayerMovement(
     // Not their turn
     return {
       isMovementValid: false,
-      formedANewSequence: false,
+      newSequences: [],
       card: null,
       nextCard: null,
     };
@@ -112,7 +117,7 @@ export function testAndApplyMatchPlayerMovement(
     // Invalid movement
     return {
       isMovementValid: false,
-      formedANewSequence: false,
+      newSequences: [],
       card: null,
       nextCard: null,
     };
@@ -129,7 +134,13 @@ export function testAndApplyMatchPlayerMovement(
     playerHand.cards.push(nextCard);
   }
 
-  const formedANewSequence = false;
+  const newSequences = testNewSequencesForMovement(
+    matchState.boardState,
+    movement.row,
+    movement.col,
+    matchPlayer.team
+  );
+  const formedANewSequence = newSequences.length > 0;
 
   // Add card to board
   matchState.boardState[movement.row][movement.col] = {
@@ -137,9 +148,11 @@ export function testAndApplyMatchPlayerMovement(
     isPartOfASequence: formedANewSequence,
   };
 
+  updateBoardStateFromNewSequences(matchState.boardState, newSequences);
+
   return {
     isMovementValid: true,
-    formedANewSequence: formedANewSequence,
+    newSequences,
     card,
     nextCard,
   };
@@ -199,6 +212,11 @@ export function startMatch(matchCode: string): boolean {
     currentTurn: {
       turnStartTime: Date.now(),
       turnPlayerId: match.players[0].id,
+    },
+    teamSequenceCount: {
+      [MatchTeamI.One]: 0,
+      [MatchTeamI.Two]: 0,
+      [MatchTeamI.Three]: 0,
     },
   };
 

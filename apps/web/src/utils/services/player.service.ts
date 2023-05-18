@@ -1,5 +1,5 @@
 import type { Player } from "game-logic";
-import { ClientAPI, setClientAxiosDefaultHeader } from "../api";
+import { ClientAPI, setClientAxiosDefaultHeader } from "@/utils/api";
 
 const PLAYER_ID_LOCAL_STORAGE_KEY = "playerId";
 

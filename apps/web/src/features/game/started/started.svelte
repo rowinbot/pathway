@@ -27,11 +27,6 @@
   let showHintsForCard: CardObject | null = null;
   let showAllHints = false;
 
-  $: {
-    console.log(showAllHints);
-    console.log(showHintsForCard);
-  }
-
   $: isCurrentPlayerTurn =
     matchCurrentTurnPlayer?.id === currentMatchPlayer?.id;
 

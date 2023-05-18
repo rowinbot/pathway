@@ -10,7 +10,7 @@
   import CardContainer from "./cards/card-container.svelte";
   import Coin from "./cards/coin.svelte";
   import TeamCoins from "./cards/team-coins.svelte";
-  import { teamTokenColor } from "../../../utils/match-team";
+  import { teamTokenColor } from "@/utils/match-team";
 
   export let playerTeam: MatchTeamI;
   export let playerHand: MatchPlayerHand;

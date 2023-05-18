@@ -14,16 +14,14 @@
   import Spade from "./cards/spade.svelte";
   import { createEventDispatcher } from "svelte";
   import PlayerCoin from "./cards/player-coin.svelte";
-  import {
-    teamCardHighlightColor,
-    teamTokenColor,
-  } from "../../../utils/match-team";
+  import { teamCardHighlightColor, teamTokenColor } from "@/utils/match-team";
 
   export let card: Card;
   export let row: number;
   export let col: number;
   export let disabled: boolean;
   export let occupiedByTeam: MatchTeamI | null;
+  export let isPartOfASequence = false;
 
   $: cardKindOpacity = disabled ? 0.25 : 1;
 
@@ -57,6 +55,7 @@
 </script>
 
 <CardContainer
+  borderColor={isPartOfASequence ? "#000" : null}
   bgColor={teamCardHighlightColor(occupiedByTeam)}
   on:click={onPlaceCard}
   on:keydown={onPlaceCard}

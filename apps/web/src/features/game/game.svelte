@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { loadPlayer } from "../../utils/services/player.service";
+  import { loadPlayer } from "@/utils/services/player.service";
   import { type Socket, io } from "socket.io-client";
   import { onMount } from "svelte";
   import type {
@@ -13,8 +13,9 @@
   } from "game-logic";
 
   import {
-    buildBoard,
     MatchJoinStatus,
+    updateBoardStateFromNewSequences,
+    buildBoard,
     CardNumber,
     cardNumber,
   } from "game-logic";
@@ -26,7 +27,7 @@
   } from "game-logic/realtime";
   import Started from "./started/started.svelte";
   import Entrance from "./entrance/entrance.svelte";
-  import { getMatchTeamName } from "../../utils/match-team";
+  import { getMatchTeamName } from "@/utils/match-team";
   import { notifications } from "./misc/notifications";
   import Notifications from "./misc/notifications.svelte";
 
@@ -128,14 +129,19 @@
       socket.on(
         ServerToClientEvent.PLAYER_MOVEMENT,
         (movement, currentTurn) => {
-          const { card, col, row, isPartOfASequence, team } = movement;
+          const { card, col, row, newSequences, team } = movement;
 
           lastPlayedCard = card;
 
+          const createdNewSequences = newSequences.length > 0;
+
           boardState[row][col] = {
             team: cardNumber(card) === CardNumber.SingleJack ? null : team,
-            isPartOfASequence: isPartOfASequence,
+            isPartOfASequence: createdNewSequences,
           };
+
+          if (createdNewSequences)
+            updateBoardStateFromNewSequences(boardState, newSequences);
           matchCurrentTurn = currentTurn;
           emitTurnNotification(currentTurn.turnPlayerId);
         }
@@ -176,7 +182,7 @@
     }
   }
 
-  function placeCard(event: CustomEvent<{ row: number; col: number }>) {
+  function doMovement(event: CustomEvent<{ row: number; col: number }>) {
     socket.emit(
       ClientToServerEvent.MOVEMENT,
       {
@@ -266,7 +272,7 @@
             {matchCurrentTurn}
             {playerHand}
             {lastPlayedCard}
-            on:pick-card={placeCard}
+            on:pick-card={doMovement}
           />
         {:else}
           <Entrance

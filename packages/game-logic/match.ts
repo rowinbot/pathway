@@ -96,6 +96,14 @@ export interface MatchTeam {
   players: MatchPlayer[];
 }
 
+export interface NewSequenceBounds {
+  startRow: number;
+  endRow: number;
+  startCol: number;
+  endCol: number;
+  sequencesCount: number;
+}
+
 // Utilities below 👇
 
 const MATCH_CODE_REGEX = /^P-[0-9a-zA-Z]{0,4}$/;
@@ -289,14 +297,6 @@ export function getCardsShuffled(): Card[] {
   return cards.sort(() => Math.random() - 0.5);
 }
 
-interface NewSequenceBounds {
-  startRow: number;
-  endRow: number;
-  startCol: number;
-  endCol: number;
-  sequencesCount: number;
-}
-
 export function findNewSequenceFromPosition(
   boardState: BoardState,
   row: number,
@@ -310,31 +310,22 @@ export function findNewSequenceFromPosition(
 ): NewSequenceBounds | null {
   if (boardState[row][col].isPartOfASequence) return null;
 
-  let cardsForSequence = 0;
-
   let sequenceStartRow = row;
   let sequenceStartCol = col;
 
   let sequenceEndRow = row;
   let sequenceEndCol = col;
 
-  let goingBackwards = true;
+  let cardsForSequence = 1; // The card at the current position is already counted
+  let [currentRow, currentCol] = getNextPos(row, col, true);
 
-  let currentRow = row;
-  let currentCol = col;
-
+  // Going backwards
   while (
     currentRow >= 0 &&
     currentCol >= 0 &&
     currentRow < 10 &&
     currentCol < 10
   ) {
-    [currentRow, currentCol] = getNextPos(
-      currentRow,
-      currentCol,
-      goingBackwards
-    );
-
     const stateAtPos = boardState[currentRow][currentCol];
     const cardAtPos = staticBoardRows[currentRow][currentCol];
 
@@ -342,34 +333,56 @@ export function findNewSequenceFromPosition(
       isEmptyCard(cardAtPos) || stateAtPos.team === team;
 
     // If position is filled by team or empty card (intrinsic part of sequence), mark as start of sequence
-    if (goingBackwards) {
-      if (isEmptyCard(cardAtPos) || stateAtPos.team === team) {
-        sequenceStartRow = currentRow;
-        sequenceStartCol = currentCol;
-      } else {
-        goingBackwards = false;
-        currentRow = row;
-        currentCol = col;
-      }
-      // going forward :)
+    if (couldCountForSequence) {
+      sequenceStartRow = currentRow;
+      sequenceStartCol = currentCol;
     } else {
-      if (couldCountForSequence) {
-        sequenceEndRow = currentRow;
-        sequenceEndCol = currentCol;
-      } else {
-        // If we're going forward and the card can't count for the sequence, break!
-        break;
-      }
+      break;
     }
 
     if (couldCountForSequence) {
       cardsForSequence++;
     }
+
+    [currentRow, currentCol] = getNextPos(currentRow, currentCol, true);
   }
 
-  if (CARDS_TIL_SEQUENCE % cardsForSequence === 0) {
+  [currentRow, currentCol] = getNextPos(row, col, false);
+
+  // Going forward
+  while (
+    currentRow >= 0 &&
+    currentCol >= 0 &&
+    currentRow < 10 &&
+    currentCol < 10
+  ) {
+    const stateAtPos = boardState[currentRow][currentCol];
+    const cardAtPos = staticBoardRows[currentRow][currentCol];
+
+    const couldCountForSequence =
+      isEmptyCard(cardAtPos) || stateAtPos.team === team;
+
+    if (couldCountForSequence) {
+      sequenceEndRow = currentRow;
+      sequenceEndCol = currentCol;
+    } else {
+      // If we're going forward and the card can't count for the sequence, break!
+      break;
+    }
+
+    if (couldCountForSequence) {
+      cardsForSequence++;
+    }
+
+    [currentRow, currentCol] = getNextPos(currentRow, currentCol, false);
+  }
+
+  const hasOneSequence = cardsForSequence >= CARDS_TIL_SEQUENCE;
+  const hasTwoSequences = cardsForSequence >= CARDS_TIL_SEQUENCE + 4;
+
+  if (hasOneSequence || hasTwoSequences) {
     // There might be more than one sequence in the same direction
-    const sequencesCount = cardsForSequence / CARDS_TIL_SEQUENCE;
+    const sequencesCount = hasTwoSequences ? 2 : 1;
 
     return {
       startRow: sequenceStartRow,
@@ -387,7 +400,7 @@ export function isNotNull<T>(value: T | null): value is T {
   return value !== null;
 }
 
-export function checkNewSequencesForMove(
+export function testNewSequencesForMovement(
   boardState: BoardState,
   row: number,
   col: number,
@@ -437,4 +450,26 @@ export function checkNewSequencesForMove(
       ]
     ),
   ].filter(isNotNull);
+}
+
+export function updateBoardStateFromNewSequences(
+  boardState: BoardState,
+  newSequences: NewSequenceBounds[]
+) {
+  for (const newSequence of newSequences) {
+    let row = newSequence.startRow;
+    let col = newSequence.startCol;
+
+    while (true) {
+      boardState[row][col].isPartOfASequence = true;
+
+      if (row === newSequence.endRow && col === newSequence.endCol) break;
+
+      if (col < newSequence.endCol) col++;
+      else if (col > newSequence.endCol) col--;
+
+      if (row < newSequence.endRow) row++;
+      else if (row > newSequence.endRow) row--;
+    }
+  }
 }

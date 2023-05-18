@@ -53,6 +53,7 @@
         <li in:fly={{ y: -5 }}>
           <Card
             occupiedByTeam={boardState[rowI][colI].team}
+            isPartOfASequence={boardState[rowI][colI].isPartOfASequence}
             row={rowI}
             col={colI}
             disabled={isDisabled}

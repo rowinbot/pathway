@@ -8,6 +8,7 @@ import {
   MatchConfig,
   MatchTeamI,
   MatchPlayerHand,
+  NewSequenceBounds,
 } from "./match";
 
 /**
@@ -30,7 +31,7 @@ export interface LastMovement extends Movement {
    */
   card: Card;
   team: MatchTeamI;
-  isPartOfASequence: boolean;
+  newSequences: NewSequenceBounds[];
 }
 
 export enum MatchCouldNotStartReason {

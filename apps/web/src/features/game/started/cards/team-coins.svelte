@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CARD_HEIGHT, CARD_WIDTH } from "../../../../utils/svg";
+  import { CARD_HEIGHT, CARD_WIDTH } from "@/utils/svg";
 
   const width = CARD_WIDTH;
   const height = CARD_HEIGHT;

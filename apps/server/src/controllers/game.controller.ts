@@ -149,7 +149,7 @@ function setupClientToServerEvents(
   io: AppServer
 ) {
   socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
-    const { isMovementValid, formedANewSequence, card, nextCard } =
+    const { isMovementValid, newSequences, card, nextCard } =
       testAndApplyMatchPlayerMovement(match.code, player.id, movement);
 
     if (isMovementValid && card) {
@@ -160,7 +160,7 @@ function setupClientToServerEvents(
         ServerToClientEvent.PLAYER_MOVEMENT,
         {
           ...movement,
-          isPartOfASequence: formedANewSequence,
+          newSequences,
           card,
           team: player.team,
         },
