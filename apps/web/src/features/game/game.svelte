@@ -10,6 +10,7 @@
     MatchPlayerHand,
     MatchCurrentTurn,
     Card as CardObject,
+    TeamI,
   } from "game-logic";
 
   import {
@@ -249,6 +250,14 @@
       );
     }
   }
+
+  function movePlayerToTeam(e: CustomEvent<{ playerId: string; team: TeamI }>) {
+    socket.emit(
+      ClientToServerEvent.MOVE_PLAYER_TO_TEAM,
+      e.detail.playerId,
+      e.detail.team
+    );
+  }
 </script>
 
 <main class="pb-8 flex flex-col">
@@ -294,6 +303,7 @@
             {currentMatchPlayer}
             {matchPlayers}
             on:start-game={startGame}
+            on:drop-player-to-team={movePlayerToTeam}
           />
         {/if}
       {/if}

@@ -1,17 +1,36 @@
 <script lang="ts">
-  import { type MatchPlayer, getMatchTeamsPlayers } from "game-logic";
+  import { type MatchPlayer, getMatchTeamsPlayers, TeamI } from "game-logic";
   import { createEventDispatcher } from "svelte";
-  import Icon from "@iconify/svelte";
   import { getMatchTeamName, teamHeaderColor } from "../../../utils/match-team";
+  import { createDroppable } from "../misc/droppable";
+  import TeamPlayer from "./team-player.svelte";
 
   export let currentMatchPlayer: MatchPlayer | null = null;
   export let matchPlayers: MatchPlayer[];
 
   const dispatch = createEventDispatcher<{
     "start-game": void;
+    "drop-player-to-team": {
+      playerId: string;
+      team: TeamI;
+    };
   }>();
 
   $: matchTeams = getMatchTeamsPlayers(matchPlayers);
+
+  const { onDragOver, onDrop } = createDroppable(
+    (playerId: string, target: HTMLDivElement) => {
+      const maybeTeam = target.dataset.team;
+
+      if (maybeTeam !== undefined && maybeTeam !== null) {
+        dispatch("drop-player-to-team", {
+          playerId,
+          team: +maybeTeam,
+        });
+      }
+    },
+    (playerId) => matchPlayers.some((p) => p.id === playerId)
+  );
 
   function startGame() {
     dispatch("start-game");
@@ -24,7 +43,15 @@
 
     <div class="w-full grid md:grid-cols-3 gap-4">
       {#each Object.entries(matchTeams) as [team, players]}
-        <div class="bg-gray-100 rounded-xl">
+        {@const droppableArea = "team" + team}
+
+        <div
+          id={droppableArea}
+          data-team={team}
+          class="bg-gray-100 rounded-xl"
+          on:dragover={onDragOver}
+          on:drop={onDrop}
+        >
           <h3
             class="rounded-t-xl px-4 py-2 text-white"
             style="background-color: {teamHeaderColor(+team)}"
@@ -35,35 +62,7 @@
           <ul class="px-4 pt-2 pb-4 space-y-2 overflow-x-auto">
             {#each players as player}
               <li>
-                <p class="whitespace-nowrap">
-                  <span
-                    class:text-blue-700={currentMatchPlayer &&
-                      player.id === currentMatchPlayer.id}
-                  >
-                    @{player.nickname}
-
-                    {#if player.id === currentMatchPlayer?.id}
-                      (you)
-                    {/if}
-                  </span>
-
-                  <span
-                    class="w-2 h-2 align-middle inline-block rounded-full"
-                    class:bg-green-600={player.isConnected}
-                    class:bg-yellow-500={!player.isConnected}
-                    aria-label="Player is {player.isConnected
-                      ? 'connected'
-                      : 'disconnected'}"
-                  />
-
-                  {#if player.isOwner}
-                    <Icon
-                      aria-label="Owner of the match"
-                      icon="mdi:shield-crown"
-                      class="inline text-xl text-yellow-700"
-                    />
-                  {/if}
-                </p>
+                <TeamPlayer {droppableArea} {player} {currentMatchPlayer} />
               </li>
             {/each}
           </ul>

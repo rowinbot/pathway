@@ -4,6 +4,7 @@ import {
   getMatchByCode,
   getMatchPlayer,
   joinMatch,
+  movePlayerToTeam,
   nextMatchTurn,
   startMatch,
   testAndApplyMatchPlayerMovement,
@@ -145,13 +146,13 @@ function onPlayerConnected(
 
 function setupClientToServerEvents(
   match: Match,
-  player: MatchPlayer,
+  currentPlayer: MatchPlayer,
   socket: AppSocket,
   io: AppServer
 ) {
   socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
     const { isMovementValid, newSequences, card, nextCard } =
-      testAndApplyMatchPlayerMovement(match.code, player.id, movement);
+      testAndApplyMatchPlayerMovement(match.code, currentPlayer.id, movement);
 
     if (isMovementValid && card) {
       setupMatchTurnTimer(match, io);
@@ -163,7 +164,7 @@ function setupClientToServerEvents(
           ...movement,
           newSequences,
           card,
-          team: player.team,
+          team: currentPlayer.team,
         },
         nextTurn
       );
@@ -178,12 +179,12 @@ function setupClientToServerEvents(
     // After notifying the client, check if the game is over.
 
     if (
-      player &&
+      currentPlayer &&
       match.matchState &&
       newSequences.length > 0 &&
-      match.matchState.teamSequenceCount[player.team] >= 2
+      match.matchState.teamSequenceCount[currentPlayer.team] >= 2
     ) {
-      cleanupGame(match, io, player.team);
+      cleanupGame(match, io, currentPlayer.team);
       return;
     }
   });
@@ -192,7 +193,7 @@ function setupClientToServerEvents(
     let didStart = false;
     const matchHasValidTeams = true || testTeamsLayout(match.players);
 
-    if (player.id !== match.owner.id)
+    if (currentPlayer.id !== match.owner.id)
       return callback(didStart, MatchCouldNotStartReason.notOwner);
 
     if (!matchHasValidTeams)
@@ -219,6 +220,17 @@ function setupClientToServerEvents(
     }
 
     callback(didStart, null);
+  });
+
+  socket.on(ClientToServerEvent.MOVE_PLAYER_TO_TEAM, (playerId, team) => {
+    if (!currentPlayer.isOwner) return;
+
+    movePlayerToTeam(match.code, playerId, team);
+
+    io.to(match.code).emit(
+      ServerToClientEvent.MATCH_PLAYERS_UPDATED,
+      match.players
+    );
   });
 }
 

@@ -237,7 +237,7 @@ export function getNextMatchTurnPlayerId(
 }
 
 export function getMatchTeamsPlayers(matchPlayers: MatchPlayer[]) {
-  return getTeamsPlayers(matchPlayers).filter((t) => t.length > 0);
+  return getTeamsPlayers(matchPlayers);
 }
 
 export function getCardsShuffled(): Card[] {

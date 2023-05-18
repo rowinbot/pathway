@@ -107,7 +107,10 @@ export interface ServerToClientEvents {
 
 export enum ClientToServerEvent {
   MOVEMENT = "MOVEMENT",
+
+  // Owner only
   START_GAME = "START_GAME",
+  MOVE_PLAYER_TO_TEAM = "MOVE_PLAYER_TO_TEAM",
 }
 export interface ClientToServerEvents {
   [ClientToServerEvent.START_GAME](
@@ -119,6 +122,10 @@ export interface ClientToServerEvents {
   [ClientToServerEvent.MOVEMENT](
     movement: Movement,
     callback: (response: MovementResponse) => void
+  ): void;
+  [ClientToServerEvent.MOVE_PLAYER_TO_TEAM](
+    playerId: string,
+    team: TeamI
   ): void;
 }
 

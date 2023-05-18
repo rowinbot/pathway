@@ -8,7 +8,9 @@
   export let currentMatchPlayer: MatchPlayer | null = null;
   export let matchCurrentTurnPlayer: MatchPlayer | null = null;
 
-  $: matchTeams = getMatchTeamsPlayers(matchPlayers);
+  $: matchTeams = getMatchTeamsPlayers(matchPlayers).filter(
+    (t) => t.length > 0 // Filter out teams without players
+  );
 </script>
 
 <section class="flex-1 max-w-xl mx-auto space-y-2 px-2">

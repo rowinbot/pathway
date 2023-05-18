@@ -322,6 +322,26 @@ export function newMatchPlayerObj(player: Player, match?: Match): MatchPlayer {
   return matchPlayer;
 }
 
+export function movePlayerToTeam(
+  matchCode: string,
+  playerId: string,
+  team: TeamI
+) {
+  const match = getMatchByCode(matchCode);
+
+  if (!match) {
+    return null;
+  }
+
+  const matchPlayer = getMatchPlayer(matchCode, playerId);
+
+  if (!matchPlayer) {
+    return null;
+  }
+
+  matchPlayer.team = team;
+}
+
 // Utilities below 👇
 
 function generateMatchCode() {
