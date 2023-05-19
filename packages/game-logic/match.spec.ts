@@ -70,7 +70,7 @@ describe("finds new sequences from movement", () => {
     expect(newSequenceBounds[0].sequencesCount).toEqual(2);
   });
 
-  it("only highlights 5 cards", async () => {
+  it("only highlights 5 positions when creating a sequence with 6 valid positions", async () => {
     const boardState = buildBoard();
     const team = FriendTeam;
 
@@ -89,14 +89,14 @@ describe("finds new sequences from movement", () => {
       team
     );
 
-    expect(newSequenceBounds).toHaveLength(1);
-    expect(newSequenceBounds[0].startCol).toEqual(0);
-    expect(newSequenceBounds[0].endCol).toEqual(4);
+    expect(newSequenceBounds[0].endCol - newSequenceBounds[0].startCol).toEqual(
+      4
+    );
   });
 });
 
 describe("finds new sequences from movement - edge cases", () => {
-  it("does not add new sequences with 3 cards, empty spaces and existing sequence", async () => {
+  it("does not add new sequences with 3 cards, empty spaces and existing 4 cards sequence", async () => {
     const boardState = buildBoard();
     const team = FriendTeam;
 
@@ -115,6 +115,30 @@ describe("finds new sequences from movement - edge cases", () => {
     );
 
     expect(newSequenceBounds).toHaveLength(0);
+  });
+
+  it("adds new sequences with 3 cards, empty spaces and existing in the middle sequence", async () => {
+    const boardState = buildBoard();
+    const team = FriendTeam;
+
+    const col = 0;
+
+    boardState[1][col] = { team, isPartOfASequence: false };
+    boardState[2][col] = { team, isPartOfASequence: false };
+    boardState[3][col] = { team, isPartOfASequence: true };
+    boardState[4][col] = { team, isPartOfASequence: true };
+    boardState[5][col] = { team, isPartOfASequence: true };
+    boardState[6][col] = { team, isPartOfASequence: true };
+    boardState[7][col] = { team, isPartOfASequence: true };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      8,
+      col,
+      team
+    );
+
+    expect(newSequenceBounds).toHaveLength(1);
   });
 
   it("does not add new sequences from another team's sequences", async () => {
@@ -180,6 +204,65 @@ describe("finds new sequences from movement - edge cases", () => {
     );
 
     expect(newSequenceBounds).toHaveLength(1);
+  });
+
+  it("unable to create sequence when other teams play in the middle", async () => {
+    const boardState = buildBoard();
+
+    const row = 3;
+    boardState[row][0] = { team: FriendTeam, isPartOfASequence: false };
+    boardState[row][1] = { team: FriendTeam, isPartOfASequence: false };
+    boardState[row][2] = { team: FriendTeam, isPartOfASequence: false };
+    boardState[row][4] = { team: EnemyTeam, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      row,
+      3,
+      FriendTeam
+    );
+
+    expect(newSequenceBounds).toHaveLength(0);
+  });
+
+  it("backwards - uses empty spaces to create new sequences and keeps one card", async () => {
+    const boardState = buildBoard();
+    const team = FriendTeam;
+
+    boardState[2][2] = { team, isPartOfASequence: false };
+    boardState[3][3] = { team, isPartOfASequence: false };
+    boardState[4][4] = { team, isPartOfASequence: false };
+    boardState[5][5] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      1,
+      1,
+      team
+    );
+
+    expect(newSequenceBounds[0].endRow).toEqual(4);
+    expect(newSequenceBounds[0].endCol).toEqual(4);
+  });
+
+  it("frontward - uses empty spaces to create new sequences and keeps one card", async () => {
+    const boardState = buildBoard();
+    const team = FriendTeam;
+
+    const row = 9;
+    boardState[row][4] = { team, isPartOfASequence: false };
+    boardState[row][5] = { team, isPartOfASequence: false };
+    boardState[row][6] = { team, isPartOfASequence: false };
+    boardState[row][7] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      row,
+      8,
+      team
+    );
+
+    expect(newSequenceBounds[0].startCol).toEqual(5);
   });
 });
 

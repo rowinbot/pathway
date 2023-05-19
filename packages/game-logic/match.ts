@@ -51,6 +51,8 @@ export interface MatchPlayer extends TeamPlayer {
 export interface MatchConfig {
   turnTimeLimitSeconds: number;
   maxPlayers: number;
+  enableHints: boolean;
+  enableRematch: boolean;
 }
 
 export interface MatchState {
@@ -102,9 +104,11 @@ export interface NewSequenceBounds {
 
 const MATCH_CODE_REGEX = /^P-[0-9a-zA-Z]{0,4}$/;
 
-export const DEFAULT_ROOM_CONFIG = {
+export const DEFAULT_ROOM_CONFIG: MatchConfig = {
   turnTimeLimitSeconds: 30,
   maxPlayers: 4,
+  enableRematch: true,
+  enableHints: true,
 };
 
 export const CARDS_TIL_SEQUENCE = 5;
@@ -125,6 +129,8 @@ export function getMatchingPlayerHandCardIndexForCard(
 
   for (let i = 0; i < playerHand.cards.length; i++) {
     const card = playerHand.cards[i];
+    compatibleCardsIndexes.push(i);
+    continue;
 
     if (card.id === matchingCard.id) {
       compatibleCardsIndexes.push(i);
@@ -156,9 +162,10 @@ export function testHandCardToPositionInBoard(
   const cardAtPos = getCardAtPos(row, col);
   if (!cardAtPos) return false;
 
-  const positionState = boardState[row][col].team;
-  const isPositionFree = positionState === null;
-  const isPositionOccupiedByPlayerTeam = positionState === playerTeam;
+  const positionState = boardState[row][col];
+  const isPositionFree = positionState.team === null;
+  const isPartOfASequence = positionState.isPartOfASequence;
+  const isPositionOccupiedByPlayerTeam = positionState.team === playerTeam;
 
   // If player has a card that matches the position and the position is free, pick it.
   if (cardAtPos.id === playerHandCard.id && isPositionFree) {
@@ -175,6 +182,7 @@ export function testHandCardToPositionInBoard(
   } else if (
     cardNumber(playerHandCard) === CardNumber.SingleJack &&
     !isPositionFree &&
+    !isPartOfASequence &&
     !isPositionOccupiedByPlayerTeam
   ) {
     return true;
@@ -286,13 +294,7 @@ export function findNewSequenceFromPosition(
     const couldCountForSequence = isOccupiedByTeam && !isPartOfASequence;
 
     if (isEmptyCard(cardAtPos)) emptyCards += 1;
-
-    if (
-      isOccupiedByTeam &&
-      isPartOfASequence &&
-      cardsFromExistingSequence < MAX_CARDS_FROM_EXISTING_SEQUENCE
-    )
-      cardsFromExistingSequence += 1;
+    if (isOccupiedByTeam && isPartOfASequence) cardsFromExistingSequence += 1;
 
     // If position is filled by team or empty card (intrinsic part of sequence), mark as start of sequence
     if (couldCountForSequence) {
@@ -325,12 +327,7 @@ export function findNewSequenceFromPosition(
     const couldCountForSequence = isOccupiedByTeam && !isPartOfASequence;
 
     if (isEmptyCard(cardAtPos)) emptyCards += 1;
-    if (
-      isOccupiedByTeam &&
-      isPartOfASequence &&
-      cardsFromExistingSequence < MAX_CARDS_FROM_EXISTING_SEQUENCE
-    )
-      cardsFromExistingSequence += 1;
+    if (isOccupiedByTeam && isPartOfASequence) cardsFromExistingSequence += 1;
 
     if (couldCountForSequence) {
       positionsForSequence.push(currentPos);
@@ -342,18 +339,44 @@ export function findNewSequenceFromPosition(
     [currentRow, currentCol] = getNextPos(currentRow, currentCol, false);
   }
 
+  // If the existing sequence is missing one card, it used an empty card to complete it, so we need to remove one empty card (since it got used for the sequence).
+  if (cardsFromExistingSequence === CARDS_TIL_SEQUENCE - 1) {
+    emptyCards -= 1;
+  }
+
   const cardsForSequence =
-    positionsForSequence.length + cardsFromExistingSequence + emptyCards;
+    positionsForSequence.length +
+    (cardsFromExistingSequence ? 1 : 0) +
+    emptyCards;
 
   // There might be more than one sequence in the same direction
-  if (cardsForSequence >= 5 && positionsForSequence.length >= 4) {
+  if (cardsForSequence >= 5 && positionsForSequence.length >= 3) {
     const sequencesCount = cardsForSequence >= 9 ? 2 : 1;
 
-    if (positionsForSequence.length > CARDS_TIL_SEQUENCE)
-      positionsForSequence.splice(
-        CARDS_TIL_SEQUENCE,
-        positionsForSequence.length - CARDS_TIL_SEQUENCE
-      );
+    const minCardsForSequence = CARDS_TIL_SEQUENCE - emptyCards;
+
+    let sequenceIsCloserToBack: boolean;
+
+    if (row !== currentRow) {
+      sequenceIsCloserToBack = row < 4;
+    } else if (col !== currentCol) {
+      sequenceIsCloserToBack = col < 4;
+    } else {
+      sequenceIsCloserToBack = row < 4;
+    }
+
+    if (positionsForSequence.length > minCardsForSequence) {
+      if (sequenceIsCloserToBack)
+        positionsForSequence.splice(
+          minCardsForSequence,
+          positionsForSequence.length - minCardsForSequence
+        );
+      else
+        positionsForSequence.splice(
+          0,
+          positionsForSequence.length - minCardsForSequence
+        );
+    }
 
     return {
       startRow: positionsForSequence[0].row,
