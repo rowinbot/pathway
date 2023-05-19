@@ -6,6 +6,7 @@
     "build": "dotenv -- turbo run build",
     "dev": "dotenv -- turbo run dev",
     "lint": "turbo run lint",
+    "test": "dotenv -- turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "deploy-app": "turbo run deploy-app"
   },
