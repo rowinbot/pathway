@@ -7,6 +7,7 @@
   export let player: MatchPlayer;
   export let droppableArea: string;
   export let currentMatchPlayer: MatchPlayer | null = null;
+  export let draggable = false;
 
   const dispatch = createEventDispatcher<{
     "start-game": void;
@@ -25,7 +26,7 @@
 
 <p
   class="whitespace-nowrap select-none"
-  draggable="true"
+  {draggable}
   on:dragstart={onDragStart}
   on:dragend={onDragEnd}
   on:keydown={onKeyDown}

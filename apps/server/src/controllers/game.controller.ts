@@ -223,7 +223,7 @@ function setupClientToServerEvents(
   });
 
   socket.on(ClientToServerEvent.MOVE_PLAYER_TO_TEAM, (playerId, team) => {
-    if (!currentPlayer.isOwner) return;
+    if (!currentPlayer.isOwner && playerId !== currentPlayer.id) return;
 
     movePlayerToTeam(match.code, playerId, team);
 

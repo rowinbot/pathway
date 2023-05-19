@@ -18,6 +18,8 @@
 
   $: matchTeams = getMatchTeamsPlayers(matchPlayers);
 
+  const isOwner = currentMatchPlayer?.isOwner ?? false;
+
   const { onDragOver, onDrop } = createDroppable(
     (playerId: string, target: HTMLDivElement) => {
       const maybeTeam = target.dataset.team;
@@ -60,9 +62,14 @@
           </h3>
 
           <ul class="px-4 pt-2 pb-4 space-y-2 overflow-x-auto">
-            {#each players as player}
+            {#each players as player (player.id)}
               <li>
-                <TeamPlayer {droppableArea} {player} {currentMatchPlayer} />
+                <TeamPlayer
+                  draggable={isOwner || player.id === currentMatchPlayer?.id}
+                  {droppableArea}
+                  {player}
+                  {currentMatchPlayer}
+                />
               </li>
             {/each}
           </ul>
