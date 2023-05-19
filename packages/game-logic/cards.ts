@@ -24,7 +24,7 @@ export enum CardNumber {
   Nine = "9",
   Ten = "10",
   Ace = "A",
-  SingleJack = "SJ",
+  SingleJack = "J",
   DoubleJack = "DJ",
   Queen = "Q",
   King = "K",
