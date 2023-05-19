@@ -3,6 +3,7 @@
   import {
     BlackCardKind,
     RedCardKind,
+    CardNumber,
     cardKind,
     cardNumber,
     TeamI,
@@ -15,6 +16,7 @@
   import { createEventDispatcher } from "svelte";
   import PlayerCoin from "./cards/player-coin.svelte";
   import { teamCardHighlightColor, teamTokenColor } from "@/utils/match-team";
+  import Jack from "./cards/jack.svelte";
 
   export let card: Card;
   export let row: number;
@@ -22,6 +24,7 @@
   export let disabled: boolean;
   export let occupiedByTeam: TeamI | null;
   export let isPartOfASequence = false;
+  export let borderColor: string | null = null;
 
   $: cardKindOpacity = disabled ? 0.25 : 1;
 
@@ -55,7 +58,7 @@
 </script>
 
 <CardContainer
-  borderColor={isPartOfASequence ? "#000" : null}
+  borderColor={isPartOfASequence ? "#000" : borderColor}
   bgColor={teamCardHighlightColor(occupiedByTeam)}
   on:click={onPlaceCard}
   on:keydown={onPlaceCard}
@@ -84,7 +87,9 @@
     >
   </g>
 
-  {#if cardKind(card) === RedCardKind.Diamonds}
+  {#if cardNumber(card) === CardNumber.SingleJack || cardNumber(card) === CardNumber.DoubleJack}
+    <Jack opacity={cardKindOpacity} color={cardColor(card)} />
+  {:else if cardKind(card) === RedCardKind.Diamonds}
     <Diamond opacity={cardKindOpacity} color={cardColor(card)} />
   {:else if cardKind(card) === RedCardKind.Hearts}
     <Heart opacity={cardKindOpacity} color={cardColor(card)} />
