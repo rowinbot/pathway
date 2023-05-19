@@ -1,5 +1,3 @@
-import { Request } from "express";
-
 export function getSingleHeaderValue(
   headerValue: string | string[] | undefined
 ): string | undefined {
