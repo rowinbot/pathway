@@ -15,7 +15,6 @@ import {
   MAX_MATCH_TIME_SECONDS,
   Match,
   MatchJoinStatus,
-  MatchPlayer,
   TeamI,
   testTeamsLayout,
 } from "game-logic";
@@ -92,17 +91,19 @@ export function createGameSocket(httpServer: HttpServer) {
     // Join the room for this match.
     socket.join(matchCode);
 
-    onPlayerConnected(match, matchPlayer, socket, io);
-    setupClientToServerEvents(match, matchPlayer, socket, io);
+    onPlayerConnected(match, matchPlayer.id, socket, io);
+    setupClientToServerEvents(match, matchPlayer.id, socket, io);
   });
 }
 
 function onPlayerConnected(
   match: Match,
-  player: MatchPlayer,
+  playerId: string,
   socket: AppSocket,
   io: AppServer
 ) {
+  const player = getMatchPlayer(match.code, playerId)!;
+
   io.to(match.code).emit(
     ServerToClientEvent.MATCH_CONFIG_UPDATED,
     match.config
@@ -146,11 +147,13 @@ function onPlayerConnected(
 
 function setupClientToServerEvents(
   match: Match,
-  currentPlayer: MatchPlayer,
+  currentPlayerId: string,
   socket: AppSocket,
   io: AppServer
 ) {
   socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
+    const currentPlayer = getMatchPlayer(match.code, currentPlayerId)!;
+
     const { isMovementValid, newSequences, card, nextCard } =
       testAndApplyMatchPlayerMovement(match.code, currentPlayer.id, movement);
 
@@ -191,9 +194,10 @@ function setupClientToServerEvents(
 
   socket.on(ClientToServerEvent.START_GAME, async (callback) => {
     let didStart = false;
+
     const matchHasValidTeams = true || testTeamsLayout(match.players);
 
-    if (currentPlayer.id !== match.owner.id)
+    if (currentPlayerId !== match.owner.id)
       return callback(didStart, MatchCouldNotStartReason.notOwner);
 
     if (!matchHasValidTeams)
@@ -223,6 +227,7 @@ function setupClientToServerEvents(
   });
 
   socket.on(ClientToServerEvent.MOVE_PLAYER_TO_TEAM, (playerId, team) => {
+    const currentPlayer = getMatchPlayer(match.code, currentPlayerId)!;
     if (!currentPlayer.isOwner && playerId !== currentPlayer.id) return;
 
     movePlayerToTeam(match.code, playerId, team);

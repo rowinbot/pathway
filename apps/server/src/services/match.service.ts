@@ -24,6 +24,7 @@ import {
   updateBoardStateFromNewSequences,
   updateTeamSequencesCountFromNewSequenceBounds,
 } from "game-logic";
+import { getPlayer } from "./player.service";
 
 const codeToMatch = {} as Record<Match["code"], Match>;
 
@@ -44,35 +45,6 @@ export function createMatch(owner: MatchPlayer) {
 
 export function deleteMatch(code: string) {
   delete codeToMatch[code];
-}
-
-function getNextCardInDeck(
-  matchState: MatchState,
-  player: MatchPlayer
-): Card | null {
-  const nextCard = matchState.cardsDeck.pop();
-
-  if (!nextCard) {
-    return null;
-  }
-
-  if (cardIsJack(nextCard)) {
-    return nextCard;
-  }
-
-  for (let row = 0; row < staticBoardRows.length; row++) {
-    const rowCols = staticBoardRows[row];
-
-    for (let col = 0; col < rowCols.length; col++) {
-      const cardAtPos = rowCols[col];
-      const isPositionFree = matchState.boardState[row][col].team === null;
-
-      if (typeof cardAtPos === "symbol") continue;
-      else if (isPositionFree && cardAtPos.id === nextCard.id) return nextCard;
-    }
-  }
-
-  return getNextCardInDeck(matchState, player);
 }
 
 export function testAndApplyMatchPlayerMovement(
@@ -265,7 +237,21 @@ export function getMatchPlayer(matchCode: string, playerId: string) {
     return null;
   }
 
-  return match.players.find((p) => p.id === playerId) ?? null;
+  const player = getPlayer(playerId);
+
+  for (let i = 0; i < match.players.length; i++) {
+    // Make sure that the nickname is up-to-date
+    if (match.players[i].id === playerId) {
+      match.players[i] = {
+        ...match.players[i],
+        nickname: player?.nickname ?? match.players[i].nickname,
+      };
+
+      return match.players[i];
+    }
+  }
+
+  return null;
 }
 
 export function joinMatch(matchCode: string, player: Player): MatchJoinStatus {
@@ -292,6 +278,34 @@ export function joinMatch(matchCode: string, player: Player): MatchJoinStatus {
   }
 
   return MatchJoinStatus.MATCH_FULL;
+}
+
+export function movePlayerToTeam(
+  matchCode: string,
+  playerId: string,
+  team: TeamI
+) {
+  const match = getMatchByCode(matchCode);
+
+  if (!match) {
+    return null;
+  }
+
+  const matchPlayer = getMatchPlayer(matchCode, playerId);
+
+  if (!matchPlayer) {
+    return null;
+  }
+
+  matchPlayer.team = team;
+}
+
+// Utilities below 👇
+
+function generateMatchCode() {
+  const rand = Math.random() + 1; // to avoid 0
+
+  return "P-" + rand.toString(36).substring(2, 6).toLocaleUpperCase(); // e.g P-PZB2
 }
 
 /**
@@ -326,30 +340,31 @@ export function newMatchPlayerObj(player: Player, match?: Match): MatchPlayer {
   return matchPlayer;
 }
 
-export function movePlayerToTeam(
-  matchCode: string,
-  playerId: string,
-  team: TeamI
-) {
-  const match = getMatchByCode(matchCode);
+function getNextCardInDeck(
+  matchState: MatchState,
+  player: MatchPlayer
+): Card | null {
+  const nextCard = matchState.cardsDeck.pop();
 
-  if (!match) {
+  if (!nextCard) {
     return null;
   }
 
-  const matchPlayer = getMatchPlayer(matchCode, playerId);
-
-  if (!matchPlayer) {
-    return null;
+  if (cardIsJack(nextCard)) {
+    return nextCard;
   }
 
-  matchPlayer.team = team;
-}
+  for (let row = 0; row < staticBoardRows.length; row++) {
+    const rowCols = staticBoardRows[row];
 
-// Utilities below 👇
+    for (let col = 0; col < rowCols.length; col++) {
+      const cardAtPos = rowCols[col];
+      const isPositionFree = matchState.boardState[row][col].team === null;
 
-function generateMatchCode() {
-  const rand = Math.random() + 1; // to avoid 0
+      if (typeof cardAtPos === "symbol") continue;
+      else if (isPositionFree && cardAtPos.id === nextCard.id) return nextCard;
+    }
+  }
 
-  return "P-" + rand.toString(36).substring(2, 6).toLocaleUpperCase(); // e.g P-PZB2
+  return getNextCardInDeck(matchState, player);
 }
