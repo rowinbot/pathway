@@ -40,7 +40,7 @@ export default function EditableNickname(props: UpdateNicknameFormProps) {
         onInput={(e) => setLocalNickname(e.currentTarget.value)}
         type="text"
         required
-        pattern="[a-zA-Z0-9]+"
+        pattern="[a-zA-Z0-9_]+"
         minLength={3}
         maxLength={15}
         name="nickname"
