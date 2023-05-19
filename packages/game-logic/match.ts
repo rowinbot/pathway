@@ -282,12 +282,13 @@ export function findNewSequenceFromPosition(
     const cardAtPos = staticBoardRows[currentRow][currentCol];
 
     const { isPartOfASequence } = stateAtPos;
-    const couldCountForSequence =
-      stateAtPos.team === team && !isPartOfASequence;
+    const isOccupiedByTeam = stateAtPos.team === team;
+    const couldCountForSequence = isOccupiedByTeam && !isPartOfASequence;
 
     if (isEmptyCard(cardAtPos)) emptyCards += 1;
 
     if (
+      isOccupiedByTeam &&
       isPartOfASequence &&
       cardsFromExistingSequence < MAX_CARDS_FROM_EXISTING_SEQUENCE
     )
@@ -320,11 +321,12 @@ export function findNewSequenceFromPosition(
     const cardAtPos = staticBoardRows[currentRow][currentCol];
 
     const { isPartOfASequence } = stateAtPos;
-    const couldCountForSequence =
-      stateAtPos.team === team && !isPartOfASequence;
+    const isOccupiedByTeam = stateAtPos.team === team;
+    const couldCountForSequence = isOccupiedByTeam && !isPartOfASequence;
 
     if (isEmptyCard(cardAtPos)) emptyCards += 1;
     if (
+      isOccupiedByTeam &&
       isPartOfASequence &&
       cardsFromExistingSequence < MAX_CARDS_FROM_EXISTING_SEQUENCE
     )

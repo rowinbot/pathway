@@ -6,10 +6,13 @@ import {
   updateBoardStateFromNewSequences,
 } from "./match";
 
+const FriendTeam = TeamI.One;
+const EnemyTeam = TeamI.Two;
+
 describe("finds new sequences from movement", () => {
   it("horizontal - top-left corner", async () => {
     const boardState = buildBoard();
-    const team = TeamI.One;
+    const team = FriendTeam;
 
     boardState[0][4] = { team, isPartOfASequence: false };
     boardState[1][4] = { team, isPartOfASequence: false };
@@ -43,7 +46,7 @@ describe("finds new sequences from movement", () => {
 
   it("4 tokens on each side build two sequences", async () => {
     const boardState = buildBoard();
-    const team = TeamI.One;
+    const team = FriendTeam;
 
     const row = 1;
     boardState[row][0] = { team, isPartOfASequence: false };
@@ -69,7 +72,7 @@ describe("finds new sequences from movement", () => {
 
   it("only highlights 5 cards", async () => {
     const boardState = buildBoard();
-    const team = TeamI.One;
+    const team = FriendTeam;
 
     const row = 1;
     boardState[row][0] = { team, isPartOfASequence: false };
@@ -95,7 +98,7 @@ describe("finds new sequences from movement", () => {
 describe("finds new sequences from movement - edge cases", () => {
   it("does not add new sequences with 3 cards, empty spaces and existing sequence", async () => {
     const boardState = buildBoard();
-    const team = TeamI.One;
+    const team = FriendTeam;
 
     boardState[1][1] = { team, isPartOfASequence: true };
     boardState[2][2] = { team, isPartOfASequence: true };
@@ -114,9 +117,34 @@ describe("finds new sequences from movement - edge cases", () => {
     expect(newSequenceBounds).toHaveLength(0);
   });
 
+  it("does not add new sequences from another team's sequences", async () => {
+    const boardState = buildBoard();
+    const row = 2;
+
+    boardState[row][0] = { team: FriendTeam, isPartOfASequence: false };
+
+    boardState[row][1] = { team: EnemyTeam, isPartOfASequence: true };
+    boardState[row][2] = { team: EnemyTeam, isPartOfASequence: true };
+    boardState[row][3] = { team: EnemyTeam, isPartOfASequence: true };
+    boardState[row][4] = { team: EnemyTeam, isPartOfASequence: true };
+    boardState[row][5] = { team: EnemyTeam, isPartOfASequence: true };
+
+    boardState[row][6] = { team: FriendTeam, isPartOfASequence: false };
+    boardState[row][7] = { team: FriendTeam, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      row,
+      8,
+      FriendTeam
+    );
+
+    expect(newSequenceBounds).toHaveLength(0);
+  });
+
   it("adds new sequences with empty spaces and existing sequence", async () => {
     const boardState = buildBoard();
-    const team = TeamI.One;
+    const team = FriendTeam;
 
     boardState[1][1] = { team, isPartOfASequence: true };
     boardState[2][2] = { team, isPartOfASequence: true };
@@ -138,7 +166,7 @@ describe("finds new sequences from movement - edge cases", () => {
 
   it("adds new sequences with empty spaces", async () => {
     const boardState = buildBoard();
-    const team = TeamI.One;
+    const team = FriendTeam;
 
     boardState[1][1] = { team, isPartOfASequence: false };
     boardState[2][2] = { team, isPartOfASequence: false };
