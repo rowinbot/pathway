@@ -40,7 +40,7 @@ export function teamTurnHighlightColor(team: TeamI | null) {
 export function teamHeaderColor(team: TeamI) {
   switch (team) {
     case TeamI.One:
-      return "#A00";
+      return "#ff2277";
     case TeamI.Two:
       return "#00f";
     case TeamI.Three:
@@ -51,7 +51,7 @@ export function teamHeaderColor(team: TeamI) {
 export function teamTokenColor(team: TeamI) {
   switch (team) {
     case TeamI.One:
-      return "#A00";
+      return "#ff2277";
     case TeamI.Two:
       return "#00f";
     case TeamI.Three:

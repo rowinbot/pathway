@@ -35,7 +35,7 @@
   const marginX = 15;
   const marginY = 20;
 
-  const redCardKindColor = "#ff3377";
+  const redCardKindColor = "#e00000";
   const blackCardKindColor = "#222222";
 
   function cardColor(card: Card) {
