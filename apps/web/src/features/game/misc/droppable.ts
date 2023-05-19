@@ -81,6 +81,7 @@ export function createDroppable<V, T extends HTMLElement = HTMLDivElement>(
   }
 
   function onDrop(event: DragEvent) {
+    event.preventDefault();
     if (!event.dataTransfer) return;
 
     try {
