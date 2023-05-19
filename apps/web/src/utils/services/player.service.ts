@@ -24,3 +24,23 @@ export async function loadPlayer(): Promise<Player> {
 
   return player;
 }
+
+export async function updatePlayerInfo(
+  partialPlayer: Partial<Omit<Player, "id">>
+): Promise<Player> {
+  const { status, data } = await ClientAPI.post<Player>(
+    `/player/info`,
+    partialPlayer,
+    {
+      headers: {
+        "x-player-id": localStorage.getItem(PLAYER_ID_LOCAL_STORAGE_KEY),
+      },
+    }
+  );
+
+  if (status !== 201) {
+    throw new Error("Failed to update player info");
+  }
+
+  return data;
+}

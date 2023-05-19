@@ -22,6 +22,22 @@ export function createPlayer(nickname?: string) {
   return player;
 }
 
+export function updatePlayer(
+  id: string,
+  newFields: Partial<Omit<Player, "id">>
+) {
+  if (!playerExists(id)) {
+    return null;
+  }
+
+  idToPlayer[id] = {
+    ...idToPlayer[id],
+    ...newFields,
+  };
+
+  return idToPlayer[id];
+}
+
 export function playerExists(id: string) {
   return id in idToPlayer;
 }
