@@ -6,6 +6,6 @@
 </script>
 
 <g class="-translate-y-7" transition:fly={{ y: -80, opacity: 1 }} {opacity}>
-  <circle cx="120" cy="168.5" r="55" fill={color} />
-  <circle cx="120" cy="168.5" r="42.5" stroke="#fff" stroke-width="4" />
+  <circle cx="120" cy="168.5" r="60" fill={color} />
+  <circle cx="120" cy="168.5" r="47.5" stroke="#fff" stroke-width="4" />
 </g>
