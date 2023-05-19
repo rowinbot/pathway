@@ -40,6 +40,119 @@ describe("finds new sequences from movement", () => {
 
     expect(newSequenceBounds).toHaveLength(2);
   });
+
+  it("4 tokens on each side build two sequences", async () => {
+    const boardState = buildBoard();
+    const team = TeamI.One;
+
+    const row = 1;
+    boardState[row][0] = { team, isPartOfASequence: false };
+    boardState[row][1] = { team, isPartOfASequence: false };
+    boardState[row][2] = { team, isPartOfASequence: false };
+    boardState[row][3] = { team, isPartOfASequence: false };
+
+    boardState[row][5] = { team, isPartOfASequence: false };
+    boardState[row][6] = { team, isPartOfASequence: false };
+    boardState[row][7] = { team, isPartOfASequence: false };
+    boardState[row][8] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      row,
+      4,
+      team
+    );
+
+    expect(newSequenceBounds).toHaveLength(1);
+    expect(newSequenceBounds[0].sequencesCount).toEqual(2);
+  });
+
+  it("only highlights 5 cards", async () => {
+    const boardState = buildBoard();
+    const team = TeamI.One;
+
+    const row = 1;
+    boardState[row][0] = { team, isPartOfASequence: false };
+    boardState[row][1] = { team, isPartOfASequence: false };
+    boardState[row][2] = { team, isPartOfASequence: false };
+    boardState[row][3] = { team, isPartOfASequence: false };
+
+    boardState[row][5] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      row,
+      4,
+      team
+    );
+
+    expect(newSequenceBounds).toHaveLength(1);
+    expect(newSequenceBounds[0].startCol).toEqual(0);
+    expect(newSequenceBounds[0].endCol).toEqual(4);
+  });
+});
+
+describe("finds new sequences from movement - edge cases", () => {
+  it("does not add new sequences with 3 cards, empty spaces and existing sequence", async () => {
+    const boardState = buildBoard();
+    const team = TeamI.One;
+
+    boardState[1][1] = { team, isPartOfASequence: true };
+    boardState[2][2] = { team, isPartOfASequence: true };
+    boardState[3][3] = { team, isPartOfASequence: true };
+    boardState[4][4] = { team, isPartOfASequence: true };
+    boardState[5][5] = { team, isPartOfASequence: false };
+    boardState[6][6] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      7,
+      7,
+      team
+    );
+
+    expect(newSequenceBounds).toHaveLength(0);
+  });
+
+  it("adds new sequences with empty spaces and existing sequence", async () => {
+    const boardState = buildBoard();
+    const team = TeamI.One;
+
+    boardState[1][1] = { team, isPartOfASequence: true };
+    boardState[2][2] = { team, isPartOfASequence: true };
+    boardState[3][3] = { team, isPartOfASequence: true };
+    boardState[4][4] = { team, isPartOfASequence: true };
+    boardState[5][5] = { team, isPartOfASequence: false };
+    boardState[6][6] = { team, isPartOfASequence: false };
+    boardState[7][7] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      8,
+      8,
+      team
+    );
+
+    expect(newSequenceBounds).toHaveLength(1);
+  });
+
+  it("adds new sequences with empty spaces", async () => {
+    const boardState = buildBoard();
+    const team = TeamI.One;
+
+    boardState[1][1] = { team, isPartOfASequence: false };
+    boardState[2][2] = { team, isPartOfASequence: false };
+    boardState[3][3] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      4,
+      4,
+      team
+    );
+
+    expect(newSequenceBounds).toHaveLength(1);
+  });
 });
 
 describe("updates board state from new sequence bounds", () => {

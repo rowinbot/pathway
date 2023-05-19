@@ -1,7 +1,7 @@
 <script lang="ts">
+  import type { Card, BoardPosition } from "game-logic";
   import {
     BlackCardKind,
-    type Card,
     RedCardKind,
     cardKind,
     cardNumber,
@@ -26,7 +26,7 @@
   $: cardKindOpacity = disabled ? 0.25 : 1;
 
   const dispatch = createEventDispatcher<{
-    "pick-card": { card: Card; row: number; col: number };
+    "pick-card": BoardPosition & { card: Card };
   }>();
 
   const width = 240;

@@ -11,6 +11,7 @@
     MatchCurrentTurn,
     Card as CardObject,
     TeamI,
+    BoardPosition,
   } from "game-logic";
 
   import {
@@ -149,10 +150,19 @@
       );
 
       socket.on(ServerToClientEvent.MATCH_FINISHED, (winner) => {
+        const matchFinishedTimeout = 10000;
+
         if (winner !== null) {
-          alert("Winner: " + getMatchTeamName(winner));
+          const winnerTeamName = getMatchTeamName(winner);
+
+          notifications.info(
+            winner === currentMatchPlayer?.team
+              ? "You won the match! " + winnerTeamName
+              : "Winner: " + winnerTeamName,
+            matchFinishedTimeout
+          );
         } else {
-          alert("Match is a draw");
+          notifications.info("Match is a draw", matchFinishedTimeout);
         }
 
         matchCurrentTurn = null;
@@ -184,7 +194,7 @@
     }
   }
 
-  function doMovement(event: CustomEvent<{ row: number; col: number }>) {
+  function doMovement(event: CustomEvent<BoardPosition>) {
     socket.emit(
       ClientToServerEvent.MOVEMENT,
       {
@@ -225,7 +235,7 @@
       matchStarted = didStart;
 
       if (!didStart && reason) {
-        alert("Couldn't start match due to: " + reason);
+        notifications.danger("Couldn't start match due to: " + reason);
       }
     });
   }
@@ -244,7 +254,7 @@
     } catch (err) {
       console.log(err);
 
-      notifications.warning(
+      notifications.info(
         "Couldn't copy match link to clipboard: " + linkToMatch,
         10000
       );

@@ -1,4 +1,4 @@
-import { BoardState } from "./board";
+import { BoardPosition, BoardState } from "./board";
 import {
   Card,
   CardNumber,
@@ -108,6 +108,8 @@ export const DEFAULT_ROOM_CONFIG = {
 };
 
 export const CARDS_TIL_SEQUENCE = 5;
+export const MAX_CARDS_FROM_EXISTING_SEQUENCE = 1;
+
 export const CARDS_PER_PLAYER = 7;
 export const MAX_MATCH_TIME_SECONDS = 60 * 60; // 1 hour
 
@@ -259,13 +261,10 @@ export function findNewSequenceFromPosition(
 ): NewSequenceBounds | null {
   if (boardState[row][col].isPartOfASequence) return null;
 
-  let sequenceStartRow = row;
-  let sequenceStartCol = col;
+  const positionsForSequence: BoardPosition[] = [{ row, col }]; // The first position is the one we're checking (the one that was just played)
+  let emptyCards = 0;
+  let cardsFromExistingSequence = 0;
 
-  let sequenceEndRow = row;
-  let sequenceEndCol = col;
-
-  let cardsForSequence = 1; // The card at the current position is already counted
   let [currentRow, currentCol] = getNextPos(row, col, true);
 
   // Going backwards
@@ -275,22 +274,30 @@ export function findNewSequenceFromPosition(
     currentRow < 10 &&
     currentCol < 10
   ) {
+    const currentPos: BoardPosition = {
+      row: currentRow,
+      col: currentCol,
+    };
     const stateAtPos = boardState[currentRow][currentCol];
     const cardAtPos = staticBoardRows[currentRow][currentCol];
 
+    const { isPartOfASequence } = stateAtPos;
     const couldCountForSequence =
-      isEmptyCard(cardAtPos) || stateAtPos.team === team;
+      stateAtPos.team === team && !isPartOfASequence;
+
+    if (isEmptyCard(cardAtPos)) emptyCards += 1;
+
+    if (
+      isPartOfASequence &&
+      cardsFromExistingSequence < MAX_CARDS_FROM_EXISTING_SEQUENCE
+    )
+      cardsFromExistingSequence += 1;
 
     // If position is filled by team or empty card (intrinsic part of sequence), mark as start of sequence
     if (couldCountForSequence) {
-      sequenceStartRow = currentRow;
-      sequenceStartCol = currentCol;
-    } else {
+      positionsForSequence.unshift(currentPos);
+    } else if (!isPartOfASequence) {
       break;
-    }
-
-    if (couldCountForSequence) {
-      cardsForSequence++;
     }
 
     [currentRow, currentCol] = getNextPos(currentRow, currentCol, true);
@@ -305,38 +312,52 @@ export function findNewSequenceFromPosition(
     currentRow < 10 &&
     currentCol < 10
   ) {
+    const currentPos: BoardPosition = {
+      row: currentRow,
+      col: currentCol,
+    };
     const stateAtPos = boardState[currentRow][currentCol];
     const cardAtPos = staticBoardRows[currentRow][currentCol];
 
+    const { isPartOfASequence } = stateAtPos;
     const couldCountForSequence =
-      isEmptyCard(cardAtPos) || stateAtPos.team === team;
+      stateAtPos.team === team && !isPartOfASequence;
+
+    if (isEmptyCard(cardAtPos)) emptyCards += 1;
+    if (
+      isPartOfASequence &&
+      cardsFromExistingSequence < MAX_CARDS_FROM_EXISTING_SEQUENCE
+    )
+      cardsFromExistingSequence += 1;
 
     if (couldCountForSequence) {
-      sequenceEndRow = currentRow;
-      sequenceEndCol = currentCol;
-    } else {
+      positionsForSequence.push(currentPos);
+    } else if (!isPartOfASequence) {
       // If we're going forward and the card can't count for the sequence, break!
       break;
-    }
-
-    if (couldCountForSequence) {
-      cardsForSequence++;
     }
 
     [currentRow, currentCol] = getNextPos(currentRow, currentCol, false);
   }
 
-  const hasTwoSequences = cardsForSequence >= CARDS_TIL_SEQUENCE + 4;
+  const cardsForSequence =
+    positionsForSequence.length + cardsFromExistingSequence + emptyCards;
 
-  if (cardsForSequence === 5 || cardsForSequence >= 9) {
-    // There might be more than one sequence in the same direction
-    const sequencesCount = hasTwoSequences ? 2 : 1;
+  // There might be more than one sequence in the same direction
+  if (cardsForSequence >= 5 && positionsForSequence.length >= 4) {
+    const sequencesCount = cardsForSequence >= 9 ? 2 : 1;
+
+    if (positionsForSequence.length > CARDS_TIL_SEQUENCE)
+      positionsForSequence.splice(
+        CARDS_TIL_SEQUENCE,
+        positionsForSequence.length - CARDS_TIL_SEQUENCE
+      );
 
     return {
-      startRow: sequenceStartRow,
-      startCol: sequenceStartCol,
-      endRow: sequenceEndRow,
-      endCol: sequenceEndCol,
+      startRow: positionsForSequence[0].row,
+      startCol: positionsForSequence[0].col,
+      endRow: positionsForSequence[positionsForSequence.length - 1].row,
+      endCol: positionsForSequence[positionsForSequence.length - 1].col,
       sequencesCount,
     };
   }

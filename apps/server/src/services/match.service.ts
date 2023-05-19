@@ -135,17 +135,21 @@ export function testAndApplyMatchPlayerMovement(
     playerHand.cards.push(nextCard);
   }
 
-  const newSequences = testNewSequencesForMovement(
-    matchState.boardState,
-    movement.row,
-    movement.col,
-    matchPlayer.team
-  );
+  const oneEyedJack = cardNumber(card) === CardNumber.SingleJack;
+  const newSequences = oneEyedJack
+    ? []
+    : testNewSequencesForMovement(
+        matchState.boardState,
+        movement.row,
+        movement.col,
+        matchPlayer.team
+      );
+
   const formedANewSequence = newSequences.length > 0;
 
   // Add card to board
   matchState.boardState[movement.row][movement.col] = {
-    team: cardNumber(card) === CardNumber.SingleJack ? null : matchPlayer.team,
+    team: oneEyedJack ? null : matchPlayer.team,
     isPartOfASequence: formedANewSequence,
   };
 

@@ -12,7 +12,7 @@
 </script>
 
 <div
-  class="bottom-20 space-y-4 fixed inset-x-0 mx-auto flex flex-col justify-start items-center pointer-events-none z-50"
+  class="bottom-20 space-y-4 fixed inset-x-0 mx-auto flex flex-col justify-start items-center z-50"
 >
   {#each $notifications as notification (notification.id)}
     <div
