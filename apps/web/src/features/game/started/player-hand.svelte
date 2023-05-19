@@ -30,6 +30,8 @@
     showAllHints = !showAllHints;
     showHintsForCard = null;
   }
+
+  const activeHintBorderColor = "blue";
 </script>
 
 <section class="flex-1 max-w-xl mx-auto space-y-2 px-2">
@@ -44,13 +46,19 @@
           col={0}
           disabled={false}
           occupiedByTeam={null}
+          borderColor={showHintsForCard?.id === card.id
+            ? activeHintBorderColor
+            : null}
           on:pick-card={onPickHandCard}
         />
       </li>
     {/each}
 
     <li>
-      <CardContainer on:click={onClickShowAllHints}>
+      <CardContainer
+        on:click={onClickShowAllHints}
+        borderColor={showAllHints ? activeHintBorderColor : null}
+      >
         <Coin color="#383838" />
       </CardContainer>
     </li>
