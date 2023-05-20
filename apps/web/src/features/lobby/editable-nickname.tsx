@@ -1,19 +1,32 @@
 /** @jsxImportSource solid-js */
 
+import { debounce } from "@/utils/misc";
 import { updatePlayerInfo } from "@/utils/services/player.service";
 import { createEffect, createSignal } from "solid-js";
 
 interface UpdateNicknameFormProps {
   nickname: string;
+  submitting: boolean;
   onUpdate: (nickname: string) => void;
 }
 export default function EditableNickname(props: UpdateNicknameFormProps) {
   const [localNickname, setLocalNickname] = createSignal(props.nickname);
 
+  const debouncedUpdatePlayerInfo = debounce(updatePlayerInfo, 500);
+  function onChange(e: InputEvent) {
+    const input = (e.currentTarget || e.target) as HTMLInputElement;
+
+    setLocalNickname(input.value);
+    if (input.checkValidity())
+      debouncedUpdatePlayerInfo({ nickname: input.value }).then((p) =>
+        props.onUpdate(p.nickname)
+      );
+  }
+
   async function onSubmit(e: SubmitEvent) {
     e.preventDefault();
 
-    const form = e.target as HTMLFormElement;
+    const form = (e.currentTarget || e.target) as HTMLFormElement;
     // check is form is valid
 
     const item = form.elements.namedItem("nickname");
@@ -36,8 +49,8 @@ export default function EditableNickname(props: UpdateNicknameFormProps) {
     <form class="inline-flex flex-wrap gap-2" onSubmit={onSubmit}>
       <input
         aria-label="Nickname"
-        value={localNickname()}
-        onInput={(e) => setLocalNickname(e.currentTarget.value)}
+        value={props.nickname}
+        onInput={onChange}
         type="text"
         required
         pattern="[a-zA-Z0-9_]+"
@@ -53,6 +66,7 @@ export default function EditableNickname(props: UpdateNicknameFormProps) {
 
       <button
         type="submit"
+        disabled={props.submitting}
         class="px-4 py-2 text-base bg-blue-800 border-[1px] border-blue-800 text-white rounded-lg uppercase disabled:opacity-50"
       >
         Update nickname
