@@ -12,6 +12,7 @@
       "persistent": true
     },
     "deploy-app": {
+      "cache": false,
       "dependsOn": ["build"]
     }
   }
