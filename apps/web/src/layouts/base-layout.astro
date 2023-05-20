@@ -5,6 +5,7 @@ import "@/styles/app.css";
 // import "@fontsource/assistant";
 import TopBar from "@/components/layout/top-bar.astro";
 import Footer from "@/components/layout/footer.astro";
+import Notifications from "@/features/notifications/notifications.svelte";
 
 export interface Props {
   title: string;
@@ -30,5 +31,7 @@ const { title } = Astro.props;
     </div>
 
     <Footer />
+
+    <Notifications client:load />
   </body>
 </html>

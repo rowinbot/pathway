@@ -7,22 +7,23 @@
     success: "#84C991",
     warning: "#f0ad4e",
     info: "#5b20de",
-    default: "#000",
+    default: "#000000",
   };
 </script>
 
 <div
-  class="bottom-20 space-y-4 fixed inset-x-0 mx-auto flex flex-col justify-start items-center z-50"
+  class="fixed bottom-10 space-y-4 left-[50%] translate-x-[-50%] mx-auto flex flex-col justify-start items-center z-50 min-w-[200px]"
 >
   {#each $notifications as notification (notification.id)}
     <div
-      class="rounded-lg"
+      class="rounded-full shadow-lg"
       style="background: {themes[notification.type]};"
-      in:fly={{ y: 10 }}
+      in:fly={{ y: 20 }}
       out:fly={{ y: 10 }}
     >
-      <div class="p-4 block text-white font-lg">{notification.message}</div>
-      {#if notification.icon}<i class={notification.icon} />{/if}
+      <span class="p-6 py-4 block text-white font-medium text-sm">
+        {notification.message}
+      </span>
     </div>
   {/each}
 </div>

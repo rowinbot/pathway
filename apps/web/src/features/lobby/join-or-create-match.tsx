@@ -4,6 +4,7 @@ import { createInputMask, maskArrayToFn } from "@solid-primitives/input-mask";
 import { Show, createSignal } from "solid-js";
 import { createMatch, joinMatch } from "@/utils/services/match.service";
 import { Match, MatchJoinStatus, Player } from "game-logic";
+import { notifications } from "@/features/notifications/notifications";
 
 const MATCH_CODE_LENGTH = 6;
 
@@ -30,7 +31,7 @@ export function JoinOrCreateMatch(props: JoinOrCreateMatchProps) {
       const match = await createMatch();
 
       if (!match) {
-        alert("Could not create match");
+        notifications.warning("Could not create match");
         return;
       }
 
@@ -40,7 +41,9 @@ export function JoinOrCreateMatch(props: JoinOrCreateMatchProps) {
 
       if (matchJoinStatus !== MatchJoinStatus.SUCCESS) {
         // NOTE: Improve error messaging
-        alert("Could not join match with error: " + matchJoinStatus);
+        notifications.warning(
+          "Could not join match with error: " + matchJoinStatus
+        );
         return;
       }
 

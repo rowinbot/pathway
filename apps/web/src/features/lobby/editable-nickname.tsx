@@ -3,6 +3,7 @@
 import { debounce } from "@/utils/misc";
 import { updatePlayerInfo } from "@/utils/services/player.service";
 import { createEffect, createSignal } from "solid-js";
+import { notifications } from "@/features/notifications/notifications";
 
 interface UpdateNicknameFormProps {
   nickname: string;
@@ -12,18 +13,20 @@ interface UpdateNicknameFormProps {
 export default function EditableNickname(props: UpdateNicknameFormProps) {
   const [localNickname, setLocalNickname] = createSignal(props.nickname);
 
-  const debouncedUpdatePlayerInfo = debounce(updatePlayerInfo, 500);
+  const updateNickname = debounce(async (nickname: string) => {
+    await updatePlayerInfo({ nickname });
+    props.onUpdate(nickname);
+    notifications.info("Nickname updated to " + nickname);
+  }, 500);
+
   function onChange(e: InputEvent) {
     const input = (e.currentTarget || e.target) as HTMLInputElement;
 
     setLocalNickname(input.value);
-    if (input.checkValidity())
-      debouncedUpdatePlayerInfo({ nickname: input.value }).then((p) =>
-        props.onUpdate(p.nickname)
-      );
+    if (input.checkValidity()) updateNickname(input.value);
   }
 
-  async function onSubmit(e: SubmitEvent) {
+  function onSubmit(e: SubmitEvent) {
     e.preventDefault();
 
     const form = (e.currentTarget || e.target) as HTMLFormElement;
@@ -36,8 +39,7 @@ export default function EditableNickname(props: UpdateNicknameFormProps) {
       item.name === "nickname" &&
       item.reportValidity()
     ) {
-      await updatePlayerInfo({ nickname: item.value });
-      props.onUpdate(item.value);
+      updateNickname(item.value);
     }
   }
 

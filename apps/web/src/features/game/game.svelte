@@ -30,8 +30,7 @@
   import Started from "./started/started.svelte";
   import Entrance from "./entrance/entrance.svelte";
   import { getMatchTeamName } from "@/utils/match-team";
-  import { notifications } from "./misc/notifications";
-  import Notifications from "./misc/notifications.svelte";
+  import { notifications } from "@/features/notifications/notifications";
 
   export let gameId: string;
 
@@ -320,5 +319,3 @@
     </section>
   </div>
 </main>
-
-<Notifications />
