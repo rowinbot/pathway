@@ -290,16 +290,17 @@ export function findNewSequenceFromPosition(
     const cardAtPos = staticBoardRows[currentRow][currentCol];
 
     const { isPartOfASequence } = stateAtPos;
+    const isCardAtPosEmpty = isEmptyCard(cardAtPos);
     const isOccupiedByTeam = stateAtPos.team === team;
     const couldCountForSequence = isOccupiedByTeam && !isPartOfASequence;
 
-    if (isEmptyCard(cardAtPos)) emptyCards += 1;
+    if (isCardAtPosEmpty) emptyCards += 1;
     if (isOccupiedByTeam && isPartOfASequence) cardsFromExistingSequence += 1;
 
     // If position is filled by team or empty card (intrinsic part of sequence), mark as start of sequence
     if (couldCountForSequence) {
       positionsForSequence.unshift(currentPos);
-    } else if (!isPartOfASequence) {
+    } else if (!isPartOfASequence || (!isOccupiedByTeam && !isCardAtPosEmpty)) {
       break;
     }
 
@@ -323,16 +324,16 @@ export function findNewSequenceFromPosition(
     const cardAtPos = staticBoardRows[currentRow][currentCol];
 
     const { isPartOfASequence } = stateAtPos;
+    const isCardAtPosEmpty = isEmptyCard(cardAtPos);
     const isOccupiedByTeam = stateAtPos.team === team;
     const couldCountForSequence = isOccupiedByTeam && !isPartOfASequence;
 
-    if (isEmptyCard(cardAtPos)) emptyCards += 1;
+    if (isCardAtPosEmpty) emptyCards += 1;
     if (isOccupiedByTeam && isPartOfASequence) cardsFromExistingSequence += 1;
 
     if (couldCountForSequence) {
       positionsForSequence.push(currentPos);
-    } else if (!isPartOfASequence) {
-      // If we're going forward and the card can't count for the sequence, break!
+    } else if (!isPartOfASequence || (!isOccupiedByTeam && !isCardAtPosEmpty)) {
       break;
     }
 

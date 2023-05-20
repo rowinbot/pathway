@@ -7,7 +7,7 @@ import {
 } from "./match";
 
 const FriendTeam = TeamI.One;
-const EnemyTeam = TeamI.Two;
+const FoeTeam = TeamI.Two;
 
 describe("finds new sequences from movement", () => {
   it("horizontal - top-left corner", async () => {
@@ -147,11 +147,11 @@ describe("finds new sequences from movement - edge cases", () => {
 
     boardState[row][0] = { team: FriendTeam, isPartOfASequence: false };
 
-    boardState[row][1] = { team: EnemyTeam, isPartOfASequence: true };
-    boardState[row][2] = { team: EnemyTeam, isPartOfASequence: true };
-    boardState[row][3] = { team: EnemyTeam, isPartOfASequence: true };
-    boardState[row][4] = { team: EnemyTeam, isPartOfASequence: true };
-    boardState[row][5] = { team: EnemyTeam, isPartOfASequence: true };
+    boardState[row][1] = { team: FoeTeam, isPartOfASequence: true };
+    boardState[row][2] = { team: FoeTeam, isPartOfASequence: true };
+    boardState[row][3] = { team: FoeTeam, isPartOfASequence: true };
+    boardState[row][4] = { team: FoeTeam, isPartOfASequence: true };
+    boardState[row][5] = { team: FoeTeam, isPartOfASequence: true };
 
     boardState[row][6] = { team: FriendTeam, isPartOfASequence: false };
     boardState[row][7] = { team: FriendTeam, isPartOfASequence: false };
@@ -213,12 +213,13 @@ describe("finds new sequences from movement - edge cases", () => {
     boardState[row][0] = { team: FriendTeam, isPartOfASequence: false };
     boardState[row][1] = { team: FriendTeam, isPartOfASequence: false };
     boardState[row][2] = { team: FriendTeam, isPartOfASequence: false };
-    boardState[row][4] = { team: EnemyTeam, isPartOfASequence: false };
+    boardState[row][3] = { team: FriendTeam, isPartOfASequence: false };
+    boardState[row][4] = { team: FoeTeam, isPartOfASequence: true };
 
     const newSequenceBounds = testNewSequencesForMovement(
       boardState,
       row,
-      3,
+      5,
       FriendTeam
     );
 
