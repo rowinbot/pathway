@@ -195,7 +195,7 @@ function setupClientToServerEvents(
   socket.on(ClientToServerEvent.START_GAME, async (callback) => {
     let didStart = false;
 
-    const matchHasValidTeams = true || testTeamsLayout(match.players);
+    const matchHasValidTeams = testTeamsLayout(match.players);
 
     if (currentPlayerId !== match.owner.id)
       return callback(didStart, MatchCouldNotStartReason.notOwner);

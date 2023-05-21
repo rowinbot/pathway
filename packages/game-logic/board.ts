@@ -5,6 +5,9 @@ type MaybeTeamI = TeamI | null;
 type BoardPositionState = { team: MaybeTeamI; isPartOfASequence: boolean };
 export type BoardState = TupleMatrix<TupleMatrix<BoardPositionState, 10>, 10>;
 
+export const BOARD_SIZE = 10;
+export const HALF_BOARD = BOARD_SIZE / 2;
+
 export interface BoardPosition {
   row: number;
   col: number;

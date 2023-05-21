@@ -1,4 +1,4 @@
-import { BoardPosition, BoardState } from "./board";
+import { BoardPosition, BoardState, HALF_BOARD } from "./board";
 import {
   Card,
   CardNumber,
@@ -129,8 +129,6 @@ export function getMatchingPlayerHandCardIndexForCard(
 
   for (let i = 0; i < playerHand.cards.length; i++) {
     const card = playerHand.cards[i];
-    compatibleCardsIndexes.push(i);
-    continue;
 
     if (card.id === matchingCard.id) {
       compatibleCardsIndexes.push(i);
@@ -356,18 +354,22 @@ export function findNewSequenceFromPosition(
 
     const minCardsForSequence = CARDS_TIL_SEQUENCE - emptyCards;
 
-    let sequenceIsCloserToBack: boolean;
-
-    if (row !== currentRow) {
-      sequenceIsCloserToBack = row < 4;
-    } else if (col !== currentCol) {
-      sequenceIsCloserToBack = col < 4;
-    } else {
-      sequenceIsCloserToBack = row < 4;
-    }
-
     if (positionsForSequence.length > minCardsForSequence) {
-      if (sequenceIsCloserToBack)
+      let sequenceIsCloserToStart: boolean;
+
+      const startPosition = positionsForSequence[0];
+      const middlePosition =
+        positionsForSequence[Math.floor(positionsForSequence.length / 2)];
+
+      if (startPosition.row !== middlePosition.row) {
+        sequenceIsCloserToStart = middlePosition.row < HALF_BOARD;
+      } else if (startPosition.col !== middlePosition.col) {
+        sequenceIsCloserToStart = middlePosition.col < HALF_BOARD;
+      } else {
+        sequenceIsCloserToStart = middlePosition.row < HALF_BOARD;
+      }
+
+      if (sequenceIsCloserToStart)
         positionsForSequence.splice(
           minCardsForSequence,
           positionsForSequence.length - minCardsForSequence
@@ -479,4 +481,22 @@ export function updateTeamSequencesCountFromNewSequenceBounds(
   }
 
   return teamSequenceCount;
+}
+
+export function updatePlayersPositionsBasedOnTeams(players: MatchPlayer[]) {
+  const newPositions: MatchPlayer[] = [];
+
+  const teams = getMatchTeamsPlayers(players).filter((team) => team.length > 0);
+
+  let i = 0;
+
+  while (newPositions.length !== players.length) {
+    const team = teams[i];
+    const player = team.pop();
+
+    if (player) newPositions.push(player);
+    i = (i + 1) % teams.length;
+  }
+
+  return newPositions;
 }

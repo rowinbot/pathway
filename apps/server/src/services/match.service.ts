@@ -23,6 +23,7 @@ import {
   testNewSequencesForMovement,
   updateBoardStateFromNewSequences,
   updateTeamSequencesCountFromNewSequenceBounds,
+  updatePlayersPositionsBasedOnTeams,
 } from "game-logic";
 import { getPlayer } from "./player.service";
 
@@ -186,6 +187,7 @@ export function startMatch(matchCode: string): boolean {
     };
   }
 
+  match.players = updatePlayersPositionsBasedOnTeams(match.players);
   match.started = true;
   match.matchState = {
     boardState: buildBoard(),

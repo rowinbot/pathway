@@ -226,7 +226,7 @@ describe("finds new sequences from movement - edge cases", () => {
     expect(newSequenceBounds).toHaveLength(0);
   });
 
-  it("backwards - uses empty spaces to create new sequences and keeps one card", async () => {
+  it("backwards - uses empty spaces to create new sequences and keeps 1 card", async () => {
     const boardState = buildBoard();
     const team = FriendTeam;
 
@@ -246,7 +246,7 @@ describe("finds new sequences from movement - edge cases", () => {
     expect(newSequenceBounds[0].endCol).toEqual(4);
   });
 
-  it("frontward - uses empty spaces to create new sequences and keeps one card", async () => {
+  it("frontward - uses empty spaces to create new sequences and keeps 1 card", async () => {
     const boardState = buildBoard();
     const team = FriendTeam;
 
@@ -260,6 +260,50 @@ describe("finds new sequences from movement - edge cases", () => {
       boardState,
       row,
       8,
+      team
+    );
+
+    expect(newSequenceBounds[0].startCol).toEqual(5);
+  });
+
+  it("starting from an empty space and 7 possible cards cards only creates sequences with 4 cards", async () => {
+    const boardState = buildBoard();
+    const team = FriendTeam;
+
+    const row = 9;
+    boardState[row][1] = { team, isPartOfASequence: false };
+    boardState[row][2] = { team, isPartOfASequence: false };
+    boardState[row][3] = { team, isPartOfASequence: false };
+
+    boardState[row][5] = { team, isPartOfASequence: false };
+    boardState[row][6] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      row,
+      4,
+      team
+    );
+
+    expect(newSequenceBounds[0].startCol).toEqual(1);
+  });
+
+  it("end at an empty space and 7 possible cards cards only creates sequences with 4 cards", async () => {
+    const boardState = buildBoard();
+    const team = FriendTeam;
+
+    const row = 9;
+    boardState[row][8] = { team, isPartOfASequence: false };
+    boardState[row][7] = { team, isPartOfASequence: false };
+    boardState[row][6] = { team, isPartOfASequence: false };
+
+    boardState[row][4] = { team, isPartOfASequence: false };
+    boardState[row][3] = { team, isPartOfASequence: false };
+
+    const newSequenceBounds = testNewSequencesForMovement(
+      boardState,
+      row,
+      5,
       team
     );
 
