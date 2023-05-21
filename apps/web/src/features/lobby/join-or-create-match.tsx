@@ -24,7 +24,8 @@ export function JoinOrCreateMatch(props: JoinOrCreateMatchProps) {
     return value;
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async (e: SubmitEvent) => {
+    e.preventDefault();
     const joiningMatchCode = matchCode();
 
     if (joiningMatchCode.length < MATCH_CODE_LENGTH) {
@@ -52,7 +53,7 @@ export function JoinOrCreateMatch(props: JoinOrCreateMatchProps) {
   };
 
   return (
-    <>
+    <form class="space-y-2" onSubmit={onSubmit}>
       <div class="flex flex-col space-y-2">
         <label for="matchCode">Match Code</label>
         <input
@@ -70,7 +71,7 @@ export function JoinOrCreateMatch(props: JoinOrCreateMatchProps) {
         fallback={
           <button
             class="px-4 py-2 text-base bg-teal-700 border-[1px] border-teal-700 text-white rounded-lg uppercase"
-            onClick={onSubmit}
+            type="submit"
           >
             Create Match
           </button>
@@ -79,11 +80,11 @@ export function JoinOrCreateMatch(props: JoinOrCreateMatchProps) {
         <button
           class="px-4 py-2 text-base bg-blue-800 border-[1px] border-blue-800 text-white rounded-lg uppercase disabled:opacity-50"
           disabled={matchCode().length < MATCH_CODE_LENGTH}
-          onClick={onSubmit}
+          type="submit"
         >
           Join Match
         </button>
       </Show>
-    </>
+    </form>
   );
 }
