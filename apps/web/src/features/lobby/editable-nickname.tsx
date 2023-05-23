@@ -12,6 +12,7 @@ interface UpdateNicknameFormProps {
 }
 export default function EditableNickname(props: UpdateNicknameFormProps) {
   const [localNickname, setLocalNickname] = createSignal(props.nickname);
+  let inputRef: HTMLInputElement | undefined;
 
   const updateNickname = debounce(async (nickname: string) => {
     await updatePlayerInfo({ nickname });
@@ -45,13 +46,16 @@ export default function EditableNickname(props: UpdateNicknameFormProps) {
 
   createEffect(() => {
     setLocalNickname(props.nickname);
+
+    // nickname is lazy, and we only set it the first time we get it (mimicking defaultValue)
+    if (inputRef && !inputRef.value) inputRef.value = props.nickname;
   });
 
   return (
     <form class="inline-flex flex-wrap gap-2" onSubmit={onSubmit}>
       <input
+        ref={inputRef}
         aria-label="Nickname"
-        value={props.nickname}
         onInput={onChange}
         type="text"
         required
