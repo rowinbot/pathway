@@ -11,14 +11,15 @@ interface UpdateNicknameFormProps {
   onUpdate: (nickname: string) => void;
 }
 export default function EditableNickname(props: UpdateNicknameFormProps) {
-  const [localNickname, setLocalNickname] = createSignal(props.nickname);
   let inputRef: HTMLInputElement | undefined;
+  const [localNickname, setLocalNickname] = createSignal(props.nickname);
+  const [nicknameLoaded, setNicknameLoaded] = createSignal(false);
 
   const updateNickname = debounce(async (nickname: string) => {
     await updatePlayerInfo({ nickname });
     props.onUpdate(nickname);
     notifications.info("Nickname updated to " + nickname);
-  }, 500);
+  }, 250);
 
   function onChange(e: InputEvent) {
     const input = (e.currentTarget || e.target) as HTMLInputElement;
@@ -48,7 +49,10 @@ export default function EditableNickname(props: UpdateNicknameFormProps) {
     setLocalNickname(props.nickname);
 
     // nickname is lazy, and we only set it the first time we get it (mimicking defaultValue)
-    if (inputRef && !inputRef.value) inputRef.value = props.nickname;
+    if (!nicknameLoaded() && props.nickname && inputRef) {
+      setNicknameLoaded(true);
+      inputRef.value = props.nickname;
+    }
   });
 
   return (
