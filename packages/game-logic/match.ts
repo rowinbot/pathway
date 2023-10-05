@@ -13,7 +13,13 @@ import { TeamI, TeamPlayer, getTeamsPlayers } from "./team";
 export interface Match {
   code: string;
   started: boolean;
+
+  /**
+   * Match admin. Can move players from teams and start match.
+   */
   owner: MatchPlayer;
+  winner: TeamI | null;
+
   players: MatchPlayer[];
   config: MatchConfig;
 
@@ -70,15 +76,6 @@ export interface MatchCurrentTurn {
 
 export interface MatchPlayerHand {
   cards: Card[];
-}
-
-export enum MatchJoinStatus {
-  SUCCESS = "success", // Player joined successfully if 1. match isn't full and 2. re-joining already started match.
-
-  // Errors below 👇
-  MATCH_NOT_FOUND = "match-not-found",
-  MATCH_FULL = "match-full",
-  MATCH_STARTED = "match-started", // Player tried joined after match started and wasn't part of it before it started (not a re-join).
 }
 
 export interface Movement {
@@ -192,11 +189,13 @@ export function testHandCardToPositionInBoard(
 export function getMatchingHandCardIndexToPositionInBoard(
   boardState: BoardState,
   playerTeam: TeamI,
-  playerHand: MatchPlayerHand,
+  playerHand: MatchPlayerHand | null,
   row: number,
   col: number,
   ignoreJacks = false
 ): number | null {
+  if (!playerHand) return null;
+
   const cardAtPos = getCardAtPos(row, col);
   if (!cardAtPos) return null;
 

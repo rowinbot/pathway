@@ -2,9 +2,10 @@ import { BoardState } from "./board";
 import { Card } from "./cards";
 import { TeamI } from "./team";
 
+import { PartyJoinStatus, PartyNewMatchMode } from "./party";
+
 import {
   MatchCurrentTurn,
-  MatchJoinStatus,
   MatchPlayer,
   Movement,
   MatchConfig,
@@ -40,27 +41,32 @@ export enum MatchCouldNotStartReason {
   notOwner = "notOwner",
 }
 
+export enum NewMatchCouldNotStartReason {
+  invalidLayout = "invalidLayout",
+  notOwner = "notOwner",
+}
+
 export enum ServerToClientEvent {
   /**
-   * Fired when a player joins a match.
+   * Fired when a player joins a party.
    */
-  MATCH_JOIN = "MATCH_JOIN",
+  PARTY_JOIN = "PARTY_JOIN",
 
   /**
    * Fired when re-joining a match.
-   * This event is fired after `MATCH_JOIN` (when successfully joined) if the match already started or when the match starts.
+   * This event is fired after `PARTY_JOIN` (when successfully joined) if the latest match already started or when it starts.
    */
-  MATCH_STATE = "MATCH_STATE",
+  PARTY_STATE = "PARTY_STATE",
 
   /**
-   * Fired when joining an match and when the match config is updated.
+   * Fired when joining a party active match and when the match config is updated.
    */
-  MATCH_CONFIG_UPDATED = "MATCH_CONFIG_UPDATED",
+  PARTY_CONFIG_UPDATED = "PARTY_CONFIG_UPDATED",
 
   /**
    * Fires when 1. joined a match (started / not started), 2. when a player joins / leaves a match (not started).
    */
-  MATCH_PLAYERS_UPDATED = "MATCH_PLAYERS_UPDATED",
+  PARTY_PLAYERS_UPDATED = "PARTY_PLAYERS_UPDATED",
 
   /**
    * Fired when a player places a card on the board.
@@ -78,6 +84,16 @@ export enum ServerToClientEvent {
   TURN_TIMEOUT = "TURN_TIMEOUT",
 
   /**
+   * Fired when a party owner creates/starts a new match.
+   */
+  PARTY_NEW_MATCH = "PARTY_NEW_MATCH",
+
+  /**
+   * Fires when the party owner finishes the party.
+   */
+  PARTY_FINISHED = "PARTY_FINISHED",
+
+  /**
    * Fires when the match finishes under any of the following conditions:
    * 1. When a team wins the match.                                (winner === TeamI)
    * 2. When no movements are left and the match is a draw.        (winner === null)
@@ -87,14 +103,15 @@ export enum ServerToClientEvent {
 }
 
 export interface ServerToClientEvents {
-  [ServerToClientEvent.MATCH_JOIN](matchJoinStatus: MatchJoinStatus): void;
-  [ServerToClientEvent.MATCH_STATE](
+  [ServerToClientEvent.PARTY_JOIN](partyJoinStatus: PartyJoinStatus): void;
+  [ServerToClientEvent.PARTY_STATE](
     boardState: BoardState,
     matchPlayerHand: MatchPlayerHand,
-    currentTurn: MatchCurrentTurn
+    currentTurn: MatchCurrentTurn,
+    matchWinner: TeamI | null
   ): void;
-  [ServerToClientEvent.MATCH_CONFIG_UPDATED](matchConfig: MatchConfig): void;
-  [ServerToClientEvent.MATCH_PLAYERS_UPDATED](
+  [ServerToClientEvent.PARTY_CONFIG_UPDATED](matchConfig: MatchConfig): void;
+  [ServerToClientEvent.PARTY_PLAYERS_UPDATED](
     matchPlayers: MatchPlayer[]
   ): void;
   [ServerToClientEvent.PLAYER_MOVEMENT](
@@ -102,30 +119,48 @@ export interface ServerToClientEvents {
     currentTurn: MatchCurrentTurn
   ): void;
   [ServerToClientEvent.TURN_TIMEOUT](nextTurn: MatchCurrentTurn): void;
+  [ServerToClientEvent.PARTY_FINISHED](): void;
+  [ServerToClientEvent.PARTY_NEW_MATCH](
+    partyNewMatchMode: PartyNewMatchMode
+  ): void;
   [ServerToClientEvent.MATCH_FINISHED](winner: TeamI | null): void;
 }
 
 export enum ClientToServerEvent {
   MOVEMENT = "MOVEMENT",
 
-  // Owner only
+  // Owner only 👇
+
   START_GAME = "START_GAME",
   MOVE_PLAYER_TO_TEAM = "MOVE_PLAYER_TO_TEAM",
+
+  /**
+   * Fired when (after a match ends) the **party** owner starts a new match.
+   */
+  NEW_MATCH = "NEW_MATCH",
 }
 export interface ClientToServerEvents {
+  [ClientToServerEvent.MOVEMENT](
+    movement: Movement,
+    callback: (response: MovementResponse) => void
+  ): void;
+
   [ClientToServerEvent.START_GAME](
     callback: (
       success: boolean,
       reason: MatchCouldNotStartReason | null
     ) => void
   ): void;
-  [ClientToServerEvent.MOVEMENT](
-    movement: Movement,
-    callback: (response: MovementResponse) => void
-  ): void;
   [ClientToServerEvent.MOVE_PLAYER_TO_TEAM](
     playerId: string,
     team: TeamI
+  ): void;
+  [ClientToServerEvent.NEW_MATCH](
+    partyNewMatchMode: PartyNewMatchMode,
+    callback: (
+      success: boolean,
+      reason: NewMatchCouldNotStartReason | null
+    ) => void
   ): void;
 }
 

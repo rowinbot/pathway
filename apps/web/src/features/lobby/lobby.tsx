@@ -2,8 +2,8 @@
 
 import { createResource } from "solid-js";
 import { loadPlayer } from "@/utils/services/player.service";
-import type { Match, Player } from "game-logic";
-import { JoinOrCreateMatch } from "./join-or-create-match";
+import type { Party, Player } from "game-logic";
+import { JoinOrCreateParty } from "./join-or-create-party";
 import EditableNickname from "./editable-nickname";
 
 export default function Lobby() {
@@ -11,8 +11,8 @@ export default function Lobby() {
     initialValue: null,
   });
 
-  const goToGame = async (match: Match) => {
-    window.location.assign(`/game/${match.code}`);
+  const goToGame = async (party: Party) => {
+    window.location.assign(`/game/${party.code}`);
   };
 
   return (
@@ -22,7 +22,7 @@ export default function Lobby() {
 
         <div>
           <p class="inline text-2xl font-light">
-            {"Join or create a new match - "}
+            {"Join or create a new game - "}
           </p>
 
           <EditableNickname
@@ -33,10 +33,10 @@ export default function Lobby() {
         </div>
       </header>
 
-      <JoinOrCreateMatch
+      <JoinOrCreateParty
         player={player() ?? null}
-        onMatchCreated={goToGame}
-        onMatchJoined={goToGame}
+        onPartyCreated={goToGame}
+        onPartyJoined={goToGame}
       />
     </section>
   );

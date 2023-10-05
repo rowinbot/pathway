@@ -17,7 +17,7 @@
   import { fly } from "svelte/transition";
 
   export let boardState: BoardState;
-  export let playerHand: MatchPlayerHand;
+  export let playerHand: MatchPlayerHand | null = null;
   export let currentMatchPlayer: MatchPlayer | null = null;
   export let showHintsForCard: CardObject | null = null;
   export let showAllHints: boolean = false;

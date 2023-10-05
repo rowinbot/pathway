@@ -1,20 +1,28 @@
 import { getCurrentPlayer } from "@/helpers/player.helpers";
 import {
   deleteMatch,
-  getMatchByCode,
   getMatchPlayer,
-  joinMatch,
   movePlayerToTeam,
   nextMatchTurn,
+  setMatchWinner,
   startMatch,
   testAndApplyMatchPlayerMovement,
-  updateMatchPlayerConnected,
 } from "@/services/match.service";
+import {
+  createNewPartyMatch,
+  getPartyActiveMatch,
+  getPartyByCode,
+  getPartyLastMatchCode,
+  joinParty,
+  updatePartyPlayerConnected,
+} from "@/services/party.service";
 import { getSingleHeaderValue } from "@/utils/misc";
 import {
   MAX_MATCH_TIME_SECONDS,
   Match,
-  MatchJoinStatus,
+  Party,
+  PartyJoinStatus,
+  PartyNewMatchMode,
   TeamI,
   testTeamsLayout,
 } from "game-logic";
@@ -28,6 +36,7 @@ import {
   ClientToServerEvent,
   ServerToClientEvent,
   MatchCouldNotStartReason,
+  NewMatchCouldNotStartReason,
 } from "game-logic/realtime";
 
 type AppServer = Server<
@@ -59,11 +68,11 @@ export function createGameSocket(httpServer: HttpServer) {
   });
 
   io.on("connection", (socket) => {
-    const matchCode = getSingleHeaderValue(
-      socket.handshake.headers["x-match-code"]
+    const partyCode = getSingleHeaderValue(
+      socket.handshake.headers["x-party-code"]
     );
 
-    if (!matchCode) {
+    if (!partyCode) {
       return socket.disconnect();
     }
 
@@ -75,93 +84,107 @@ export function createGameSocket(httpServer: HttpServer) {
       return socket.disconnect();
     }
 
-    // Header x-match-code
-    const match = getMatchByCode(matchCode);
-    const matchJoinStatus = joinMatch(matchCode, player);
+    // Header x-party-code
+    const party = getPartyByCode(partyCode);
+    const match = getPartyActiveMatch(partyCode);
+    const partyJoinStatus = joinParty(partyCode, player);
 
     // Let the client know the match join status.
-    socket.emit(ServerToClientEvent.MATCH_JOIN, matchJoinStatus);
+    socket.emit(ServerToClientEvent.PARTY_JOIN, partyJoinStatus);
 
-    if (!match || matchJoinStatus !== MatchJoinStatus.SUCCESS) {
+    if (!party || !match || partyJoinStatus !== PartyJoinStatus.SUCCESS) {
       return socket.disconnect();
     }
 
-    const matchPlayer = getMatchPlayer(matchCode, player.id)!;
+    const matchPlayer = getMatchPlayer(match.code, player.id)!;
 
     // Join the room for this match.
-    socket.join(matchCode);
+    socket.join(partyCode);
 
-    onPlayerConnected(match, matchPlayer.id, socket, io);
-    setupClientToServerEvents(match, matchPlayer.id, socket, io);
+    // If match already started, send the board state (could be a re-join).
+    if (match.started && match.matchState) {
+      socket.emit(
+        ServerToClientEvent.PARTY_STATE,
+        match.matchState.boardState,
+        match.matchState.playerHands[player.id],
+        match.matchState.currentTurn,
+        match.winner
+      );
+    }
+
+    updatePartyPlayerConnected(party.code, player.id, true);
+
+    io.to(party.code).emit(
+      ServerToClientEvent.PARTY_CONFIG_UPDATED,
+      match.config
+    );
+
+    io.to(party.code).emit(
+      ServerToClientEvent.PARTY_PLAYERS_UPDATED,
+      match.players
+    );
+
+    onPlayerConnected(party, matchPlayer.id, socket, io);
+    setupClientToServerEvents(party, matchPlayer.id, socket, io);
   });
 }
 
 function onPlayerConnected(
-  match: Match,
+  party: Party,
   playerId: string,
   socket: AppSocket,
   io: AppServer
 ) {
-  const player = getMatchPlayer(match.code, playerId)!;
-
-  io.to(match.code).emit(
-    ServerToClientEvent.MATCH_CONFIG_UPDATED,
-    match.config
-  );
-
-  updateMatchPlayerConnected(match.code, player.id, true);
-  io.to(match.code).emit(
-    ServerToClientEvent.MATCH_PLAYERS_UPDATED,
-    match.players
-  );
-
-  // If match already started, send the board state (could be a re-join).
-  if (match.started && match.matchState) {
-    socket.emit(
-      ServerToClientEvent.MATCH_STATE,
-      match.matchState.boardState,
-      match.matchState.playerHands[player.id],
-      match.matchState.currentTurn
-    );
-  }
+  let matchCode = party.matchesCodes[party.matchesCodes.length - 1];
+  const player = getMatchPlayer(
+    party.matchesCodes[party.matchesCodes.length - 1],
+    playerId
+  )!;
 
   socket.data = {
-    matchCode: match.code,
+    matchCode,
     playerId: player.id,
   };
 
   socket.onAny((event) => {
+    const match = getPartyActiveMatch(getPartyLastMatchCode(party));
+    if (!match) return;
+
     if (event === ClientToServerEvent.MOVEMENT) {
-      setupMatchStaleGameTimer(match, io);
+      setupMatchStaleGameTimer(party, match, io);
     }
   });
 
   socket.on("disconnecting", () => {
-    updateMatchPlayerConnected(match.code, player.id, false);
-    io.to(match.code).emit(
-      ServerToClientEvent.MATCH_PLAYERS_UPDATED,
+    const match = getPartyActiveMatch(getPartyLastMatchCode(party));
+    if (!match) return;
+
+    updatePartyPlayerConnected(party.code, player.id, false);
+    io.to(party.code).emit(
+      ServerToClientEvent.PARTY_PLAYERS_UPDATED,
       match.players
     );
   });
 }
 
 function setupClientToServerEvents(
-  match: Match,
+  party: Party,
   currentPlayerId: string,
   socket: AppSocket,
   io: AppServer
 ) {
   socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
+    const match = getPartyActiveMatch(party.code)!;
     const currentPlayer = getMatchPlayer(match.code, currentPlayerId)!;
 
     const { isMovementValid, newSequences, card, nextCard } =
       testAndApplyMatchPlayerMovement(match.code, currentPlayer.id, movement);
 
     if (isMovementValid && card) {
-      setupMatchTurnTimer(match, io);
+      setupMatchTurnTimer(party, match, io);
       const nextTurn = nextMatchTurn(match.code);
 
-      io.to(match.code).emit(
+      io.to(party.code).emit(
         ServerToClientEvent.PLAYER_MOVEMENT,
         {
           ...movement,
@@ -187,12 +210,13 @@ function setupClientToServerEvents(
       newSequences.length > 0 &&
       match.matchState.teamSequenceCount[currentPlayer.team] >= 2
     ) {
-      cleanupGame(match, io, currentPlayer.team);
+      cleanupMatch(party, match, io, currentPlayer.team);
       return;
     }
   });
 
   socket.on(ClientToServerEvent.START_GAME, async (callback) => {
+    const match = getPartyActiveMatch(party.code)!;
     let didStart = false;
 
     const matchHasValidTeams = testTeamsLayout(match.players);
@@ -204,21 +228,22 @@ function setupClientToServerEvents(
       return callback(didStart, MatchCouldNotStartReason.invalidLayout);
 
     startMatch(match.code);
-    setupMatchTurnTimer(match, io);
-    setupMatchStaleGameTimer(match, io);
+    setupMatchTurnTimer(party, match, io);
+    setupMatchStaleGameTimer(party, match, io);
 
     const matchState = match.matchState;
     if (!!matchState) {
       didStart = true;
 
-      const sockets = await io.in(match.code).fetchSockets();
+      const sockets = await io.in(party.code).fetchSockets();
 
       sockets.forEach((neighbouringSocket) => {
         neighbouringSocket.emit(
-          ServerToClientEvent.MATCH_STATE,
+          ServerToClientEvent.PARTY_STATE,
           matchState.boardState,
           matchState.playerHands[neighbouringSocket.data.playerId],
-          matchState.currentTurn
+          matchState.currentTurn,
+          match.winner
         );
       });
     }
@@ -226,20 +251,78 @@ function setupClientToServerEvents(
     callback(didStart, null);
   });
 
+  socket.on(ClientToServerEvent.NEW_MATCH, async (mode, callback) => {
+    const oldMatch = getPartyActiveMatch(party.code)!;
+    let didStart = false;
+
+    const currentPlayer = getMatchPlayer(oldMatch.code, currentPlayerId)!;
+
+    if (currentPlayerId !== oldMatch.owner.id)
+      return callback(didStart, NewMatchCouldNotStartReason.notOwner);
+
+    const match = createNewPartyMatch(party.code, currentPlayer, mode);
+    if (!match) return callback(didStart, null);
+
+    io.to(party.code).emit(ServerToClientEvent.PARTY_NEW_MATCH, mode);
+
+    io.to(party.code).emit(
+      ServerToClientEvent.PARTY_CONFIG_UPDATED,
+      match.config
+    );
+
+    io.to(party.code).emit(
+      ServerToClientEvent.PARTY_PLAYERS_UPDATED,
+      match.players
+    );
+
+    if (mode === PartyNewMatchMode.FAST_REMATCH) {
+      const matchHasValidTeams = testTeamsLayout(oldMatch.players);
+
+      if (!matchHasValidTeams)
+        return callback(didStart, NewMatchCouldNotStartReason.invalidLayout);
+
+      startMatch(match.code);
+      setupMatchTurnTimer(party, match, io);
+      setupMatchStaleGameTimer(party, match, io);
+
+      const matchState = match.matchState;
+      if (!matchState) {
+        return callback(didStart, null);
+      }
+
+      const sockets = await io.in(party.code).fetchSockets();
+
+      sockets.forEach((neighbouringSocket) => {
+        neighbouringSocket.emit(
+          ServerToClientEvent.PARTY_STATE,
+          matchState.boardState,
+          matchState.playerHands[neighbouringSocket.data.playerId],
+          matchState.currentTurn,
+          match.winner
+        );
+      });
+    }
+
+    didStart = true;
+    callback(didStart, null);
+  });
+
   socket.on(ClientToServerEvent.MOVE_PLAYER_TO_TEAM, (playerId, team) => {
+    const match = getPartyActiveMatch(party.code)!;
+
     const currentPlayer = getMatchPlayer(match.code, currentPlayerId)!;
     if (!currentPlayer.isOwner && playerId !== currentPlayer.id) return;
 
     movePlayerToTeam(match.code, playerId, team);
 
-    io.to(match.code).emit(
-      ServerToClientEvent.MATCH_PLAYERS_UPDATED,
+    io.to(party.code).emit(
+      ServerToClientEvent.PARTY_PLAYERS_UPDATED,
       match.players
     );
   });
 }
 
-function setupMatchTurnTimer(match: Match, io: AppServer) {
+function setupMatchTurnTimer(party: Party, match: Match, io: AppServer) {
   if (match.code in matchCodeToTurnTimer) {
     clearTimeout(matchCodeToTurnTimer[match.code]);
     delete matchCodeToTurnTimer[match.code];
@@ -248,31 +331,38 @@ function setupMatchTurnTimer(match: Match, io: AppServer) {
   matchCodeToTurnTimer[match.code] = setTimeout(() => {
     const nextTurn = nextMatchTurn(match.code);
 
-    io.to(match.code).emit(ServerToClientEvent.TURN_TIMEOUT, nextTurn);
-    setupMatchTurnTimer(match, io);
+    io.to(party.code).emit(ServerToClientEvent.TURN_TIMEOUT, nextTurn);
+    setupMatchTurnTimer(party, match, io);
   }, match.config.turnTimeLimitSeconds * 1000);
 }
 
-function setupMatchStaleGameTimer(match: Match, io: AppServer) {
+function setupMatchStaleGameTimer(party: Party, match: Match, io: AppServer) {
   if (match.code in matchCodeToStaleGameTimer) {
     clearTimeout(matchCodeToStaleGameTimer[match.code]);
     delete matchCodeToStaleGameTimer[match.code];
   }
 
   matchCodeToStaleGameTimer[match.code] = setTimeout(
-    () => cleanupGame(match, io),
+    () => cleanupMatch(party, match, io),
     MAX_MATCH_TIME_SECONDS * 1000
   );
 }
 
-function cleanupGame(match: Match, io: AppServer, winner: TeamI | null = null) {
-  io.to(match.code).emit(ServerToClientEvent.MATCH_FINISHED, winner);
-  deleteMatch(match.code);
+function cleanupMatch(
+  party: Party,
+  match: Match,
+  io: AppServer,
+  winner: TeamI | null = null
+) {
+  setMatchWinner(match.code, winner);
+  io.to(party.code).emit(ServerToClientEvent.MATCH_FINISHED, winner);
+  // deleteMatch(match.code);
 
   // Clear turn timer.
   clearTimeout(matchCodeToTurnTimer[match.code]);
   delete matchCodeToTurnTimer[match.code];
 
   // Disconnect all sockets in the room.
-  io.to(match.code).disconnectSockets();
+  // TODO: Make this work with parties.
+  // io.to(party.code).disconnectSockets();
 }

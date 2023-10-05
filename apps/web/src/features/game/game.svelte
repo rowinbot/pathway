@@ -12,10 +12,11 @@
     Card as CardObject,
     TeamI,
     BoardPosition,
+    PartyNewMatchMode,
   } from "game-logic";
 
   import {
-    MatchJoinStatus,
+    PartyJoinStatus,
     updateBoardStateFromNewSequences,
     buildBoard,
     CardNumber,
@@ -31,19 +32,21 @@
   import Entrance from "./entrance/entrance.svelte";
   import { getMatchTeamName } from "@/utils/match-team";
   import { notifications } from "@/features/notifications/notifications";
+  import { matchCouldNotStartReasonText } from "@/utils/strings";
 
   export let gameId: string;
 
   let boardState: BoardState = buildBoard();
-  let joinStatus: MatchJoinStatus | null = null;
+  let joinStatus: PartyJoinStatus | null = null;
 
   let player: Player;
 
   let matchPlayers: MatchPlayer[] = [];
+  let matchWinner: TeamI | null = null;
   let matchStarted: boolean = false;
   let matchCurrentTurn: MatchCurrentTurn | null = null;
   let matchConfig: MatchConfig | null = null;
-  let playerHand: MatchPlayerHand;
+  let playerHand: MatchPlayerHand | null = null;
 
   let lastPlayedCard: CardObject | null = null;
 
@@ -64,7 +67,7 @@
         autoConnect: false,
         extraHeaders: {
           "x-player-id": player.id,
-          "x-match-code": gameId,
+          "x-party-code": gameId,
         },
       });
 
@@ -72,39 +75,50 @@
         // TODO: Handle disconnect
       });
 
-      socket.on(ServerToClientEvent.MATCH_JOIN, (status) => {
+      socket.on(ServerToClientEvent.PARTY_JOIN, (status) => {
+        console.log("PARTY_JOIN", status);
         joinStatus = status;
-        if (status !== MatchJoinStatus.SUCCESS) {
+        if (status !== PartyJoinStatus.SUCCESS) {
           alert("Failed to join match: " + status);
           goBackHome();
         }
       });
 
-      socket.on(ServerToClientEvent.MATCH_CONFIG_UPDATED, (config) => {
+      socket.on(ServerToClientEvent.PARTY_CONFIG_UPDATED, (config) => {
+        console.log("PARTY_CONFIG_UPDATED", config);
         matchConfig = config;
       });
 
-      socket.on(ServerToClientEvent.MATCH_PLAYERS_UPDATED, (players) => {
+      socket.on(ServerToClientEvent.PARTY_PLAYERS_UPDATED, (players) => {
+        console.log("PARTY_PLAYERS_UPDATED", players);
         matchPlayers = players;
       });
 
-      socket.on(ServerToClientEvent.MATCH_STATE, (state, hand, currentTurn) => {
-        // If we get the board, match already started
-        matchStarted = true;
-        boardState = state;
-        matchCurrentTurn = currentTurn;
-        playerHand = hand;
+      socket.on(
+        ServerToClientEvent.PARTY_STATE,
+        (state, hand, currentTurn, winner) => {
+          console.log("PARTY_STATE", state, hand, currentTurn);
+          // If we get the board, match already started
+          matchStarted = true;
+          matchWinner = winner;
+          boardState = state;
+          if (winner === null) {
+            matchCurrentTurn = currentTurn;
+          }
+          playerHand = hand;
 
-        emitTurnNotification(currentTurn.turnPlayerId);
-        notifications.send(
-          currentMatchPlayer
-            ? "You are playing with the " +
-                getMatchTeamName(currentMatchPlayer.team)
-            : "You are playing as @" + player.nickname
-        );
-      });
+          emitTurnNotification(currentTurn.turnPlayerId);
+          notifications.send(
+            currentMatchPlayer
+              ? "You are playing with the " +
+                  getMatchTeamName(currentMatchPlayer.team)
+              : "You are playing as @" + player.nickname
+          );
+        }
+      );
 
       socket.on(ServerToClientEvent.TURN_TIMEOUT, (currentTurn) => {
+        console.log("TURN_TIMEOUT", currentTurn);
         const lastTurnPlayer = findMatchPlayerById(
           currentTurn.turnPlayerId,
           matchPlayers
@@ -130,6 +144,7 @@
       socket.on(
         ServerToClientEvent.PLAYER_MOVEMENT,
         (movement, currentTurn) => {
+          console.log("PLAYER_MOVEMENT", movement, currentTurn);
           const { card, col, row, newSequences, team } = movement;
 
           lastPlayedCard = card;
@@ -149,6 +164,7 @@
       );
 
       socket.on(ServerToClientEvent.MATCH_FINISHED, (winner) => {
+        console.log("MATCH_FINISHED", winner);
         const matchFinishedTimeout = 10000;
 
         if (winner !== null) {
@@ -164,7 +180,14 @@
           notifications.info("Match is a draw", matchFinishedTimeout);
         }
 
+        matchWinner = winner;
         matchCurrentTurn = null;
+      });
+
+      socket.on(ServerToClientEvent.PARTY_NEW_MATCH, (mode) => {
+        console.log(mode);
+        matchStarted = false;
+        matchWinner = null;
       });
 
       socket.connect();
@@ -202,6 +225,7 @@
         row: event.detail.row,
       },
       (movementResult) => {
+        if (!playerHand) throw new Error("playerHand is null");
         if (movementResult.success && movementResult.card) {
           playerHand.cards = playerHand.cards.filter(
             (card) => card.uid !== movementResult.card!.uid
@@ -229,12 +253,26 @@
 
   // 🛎️ Event handlers below 👇
 
+  function startNewGame(e: CustomEvent<{ mode: PartyNewMatchMode }>) {
+    console.log(e.detail);
+    socket.emit(
+      ClientToServerEvent.NEW_MATCH,
+      e.detail.mode,
+      (start, reason) => {
+        console.log(start, reason);
+        notifications.danger("Starting new match with mode " + e.detail.mode);
+      }
+    );
+  }
+
   function startGame() {
     socket.emit(ClientToServerEvent.START_GAME, (didStart, reason) => {
       matchStarted = didStart;
 
       if (!didStart && reason) {
-        notifications.danger("Couldn't start match due to: " + reason);
+        notifications.danger(
+          "Couldn't start match due to: " + matchCouldNotStartReasonText[reason]
+        );
       }
     });
   }
@@ -267,6 +305,20 @@
       e.detail.team
     );
   }
+
+  // $: {
+  //   console.log({
+  //     boardState,
+  //     playerHand,
+  //     currentMatchPlayer,
+  //     matchCurrentTurn,
+  //     matchCurrentTurnPlayer,
+  //     matchPlayers,
+  //     matchConfig,
+  //     lastPlayedCard,
+  //     matchStarted,
+  //   });
+  // }
 </script>
 
 <main class="pb-8 flex flex-col">
@@ -294,18 +346,20 @@
         </p>
       </header>
 
-      {#if joinStatus === MatchJoinStatus.SUCCESS && matchConfig}
+      {#if joinStatus === PartyJoinStatus.SUCCESS && matchConfig}
         {#if matchStarted}
           <Started
             {boardState}
             {matchConfig}
             {currentMatchPlayer}
             {matchPlayers}
+            {matchWinner}
             {matchCurrentTurnPlayer}
             {matchCurrentTurn}
             {playerHand}
             {lastPlayedCard}
             on:pick-card={doMovement}
+            on:start-new-game={startNewGame}
           />
         {:else}
           <Entrance

@@ -1,4 +1,4 @@
-import { Match, MatchPlayer, MatchJoinStatus } from "@/interfaces/match";
+import { Match, MatchPlayer, partyJoinStatus } from "@/interfaces/match";
 import type {
   Movement,
   Player,
@@ -36,11 +36,20 @@ export function createMatch(owner: MatchPlayer) {
     owner: owner,
     players: [owner],
     matchState: null,
+    winner: null,
     config: { ...DEFAULT_ROOM_CONFIG },
   };
 
   codeToMatch[match.code] = match;
 
+  return match;
+}
+
+export function setMatchWinner(matchCode: string, winner: TeamI | null) {
+  const match = getMatchByCode(matchCode);
+  if (!match) return;
+
+  match.winner = winner;
   return match;
 }
 
@@ -58,8 +67,10 @@ export function testAndApplyMatchPlayerMovement(
   card: Card | null;
   nextCard: Card | null;
 } {
-  const matchState = getMatchByCode(matchCode)?.matchState;
-  if (!matchState)
+  const match = getMatchByCode(matchCode);
+  const matchState = match?.matchState;
+
+  if (!matchState || match.winner !== null)
     return {
       isMovementValid: false,
       newSequences: [],
@@ -207,31 +218,6 @@ export function startMatch(matchCode: string): boolean {
   return true;
 }
 
-export function updateMatchPlayerConnected(
-  matchCode: string,
-  playerId: string,
-  isConnected: boolean
-) {
-  const match = getMatchByCode(matchCode);
-
-  if (!match) {
-    return null;
-  }
-
-  const matchPlayer = getMatchPlayer(matchCode, playerId);
-
-  if (!matchPlayer) {
-    return null;
-  }
-
-  if (!match.started && !matchPlayer.isOwner && !isConnected) {
-    // Remove player if match hasn't started yet and player is not the owner
-    match.players = match.players.filter((p) => p.id !== playerId);
-  } else {
-    matchPlayer.isConnected = isConnected;
-  }
-}
-
 export function getMatchPlayer(matchCode: string, playerId: string) {
   const match = getMatchByCode(matchCode);
 
@@ -254,32 +240,6 @@ export function getMatchPlayer(matchCode: string, playerId: string) {
   }
 
   return null;
-}
-
-export function joinMatch(matchCode: string, player: Player): MatchJoinStatus {
-  const match = getMatchByCode(matchCode);
-
-  if (!match) {
-    return MatchJoinStatus.MATCH_NOT_FOUND;
-  }
-
-  const matchPlayer = getMatchPlayer(matchCode, player.id);
-
-  // Re-join
-  if (matchPlayer) {
-    return MatchJoinStatus.SUCCESS;
-  }
-
-  if (match.started && !matchPlayer) {
-    return MatchJoinStatus.MATCH_STARTED;
-  }
-
-  if (Object.keys(match.players).length < 12 - 1) {
-    match.players.push(newMatchPlayerObj(player, match));
-    return MatchJoinStatus.SUCCESS;
-  }
-
-  return MatchJoinStatus.MATCH_FULL;
 }
 
 export function movePlayerToTeam(
@@ -307,7 +267,7 @@ export function movePlayerToTeam(
 function generateMatchCode() {
   const rand = Math.random() + 1; // to avoid 0
 
-  return "P-" + rand.toString(36).substring(2, 6).toLocaleUpperCase(); // e.g P-PZB2
+  return "M-" + rand.toString(36).substring(2, 6).toLocaleUpperCase(); // e.g P-PZB2
 }
 
 /**
