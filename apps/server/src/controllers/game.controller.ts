@@ -216,11 +216,10 @@ function setupClientToServerEvents(
     // After notifying the client, check if the game is over.
 
     if (
-      true
-      // currentPlayer &&
-      // match.matchState &&
-      // newSequences.length > 0 &&
-      // match.matchState.teamSequenceCount[currentPlayer.team] >= 2
+      currentPlayer &&
+      match.matchState &&
+      newSequences.length > 0 &&
+      match.matchState.teamSequenceCount[currentPlayer.team] >= 2
     ) {
       cleanupMatch(party, match, io, currentPlayer.team);
       return;
