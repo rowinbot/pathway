@@ -1,6 +1,5 @@
 import { getCurrentPlayer } from "@/helpers/player.helpers";
 import {
-  deleteMatch,
   getMatchPlayer,
   movePlayerToTeam,
   nextMatchTurn,
@@ -12,6 +11,7 @@ import {
   createNewPartyMatch,
   getPartyActiveMatch,
   getPartyByCode,
+  getPartyLastMatch,
   getPartyLastMatchCode,
   joinParty,
   updatePartyPlayerConnected,
@@ -86,7 +86,7 @@ export function createGameSocket(httpServer: HttpServer) {
 
     // Header x-party-code
     const party = getPartyByCode(partyCode);
-    const match = getPartyActiveMatch(partyCode);
+    const match = getPartyLastMatch(partyCode);
     const partyJoinStatus = joinParty(partyCode, player);
 
     // Let the client know the match join status.
@@ -175,6 +175,17 @@ function setupClientToServerEvents(
 ) {
   socket.on(ClientToServerEvent.MOVEMENT, (movement, callback) => {
     const match = getPartyActiveMatch(party.code)!;
+
+    if (!match) {
+      console.error("Could not find active match for party", party.code);
+      callback({
+        success: false,
+        card: null,
+        nextCard: null,
+      });
+      return;
+    }
+
     const currentPlayer = getMatchPlayer(match.code, currentPlayerId)!;
 
     const { isMovementValid, newSequences, card, nextCard } =
@@ -205,10 +216,11 @@ function setupClientToServerEvents(
     // After notifying the client, check if the game is over.
 
     if (
-      currentPlayer &&
-      match.matchState &&
-      newSequences.length > 0 &&
-      match.matchState.teamSequenceCount[currentPlayer.team] >= 2
+      true
+      // currentPlayer &&
+      // match.matchState &&
+      // newSequences.length > 0 &&
+      // match.matchState.teamSequenceCount[currentPlayer.team] >= 2
     ) {
       cleanupMatch(party, match, io, currentPlayer.team);
       return;
@@ -252,7 +264,7 @@ function setupClientToServerEvents(
   });
 
   socket.on(ClientToServerEvent.NEW_MATCH, async (mode, callback) => {
-    const oldMatch = getPartyActiveMatch(party.code)!;
+    const oldMatch = getPartyLastMatch(party.code)!;
     let didStart = false;
 
     const currentPlayer = getMatchPlayer(oldMatch.code, currentPlayerId)!;
@@ -308,7 +320,12 @@ function setupClientToServerEvents(
   });
 
   socket.on(ClientToServerEvent.MOVE_PLAYER_TO_TEAM, (playerId, team) => {
-    const match = getPartyActiveMatch(party.code)!;
+    const match = getPartyActiveMatch(party.code);
+
+    if (!match) {
+      console.error("Could not find active match for party", party.code);
+      return;
+    }
 
     const currentPlayer = getMatchPlayer(match.code, currentPlayerId)!;
     if (!currentPlayer.isOwner && playerId !== currentPlayer.id) return;

@@ -51,6 +51,10 @@ function createNotificationStore(defaultTimeout = DEFAULT_TIMEOUT) {
   return {
     subscribe: readableNotifications.subscribe, // Disable writing directly to the store
     send,
+    clear: () => {
+      while (timers.length) clearTimeout(timers.shift()!);
+      notifications.set([]);
+    },
     default: (msg: string, timeout?: number) => send(msg, "default", timeout),
     danger: (msg: string, timeout?: number) => send(msg, "danger", timeout),
     warning: (msg: string, timeout?: number) => send(msg, "warning", timeout),

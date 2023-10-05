@@ -12,8 +12,9 @@
     Card as CardObject,
     TeamI,
     BoardPosition,
-    PartyNewMatchMode,
   } from "game-logic";
+
+  import { PartyNewMatchMode } from "game-logic";
 
   import {
     PartyJoinStatus,
@@ -33,6 +34,7 @@
   import { getMatchTeamName } from "@/utils/match-team";
   import { notifications } from "@/features/notifications/notifications";
   import { matchCouldNotStartReasonText } from "@/utils/strings";
+  import Winner from "./started/winner.svelte";
 
   export let gameId: string;
 
@@ -76,7 +78,6 @@
       });
 
       socket.on(ServerToClientEvent.PARTY_JOIN, (status) => {
-        console.log("PARTY_JOIN", status);
         joinStatus = status;
         if (status !== PartyJoinStatus.SUCCESS) {
           alert("Failed to join match: " + status);
@@ -85,19 +86,16 @@
       });
 
       socket.on(ServerToClientEvent.PARTY_CONFIG_UPDATED, (config) => {
-        console.log("PARTY_CONFIG_UPDATED", config);
         matchConfig = config;
       });
 
       socket.on(ServerToClientEvent.PARTY_PLAYERS_UPDATED, (players) => {
-        console.log("PARTY_PLAYERS_UPDATED", players);
         matchPlayers = players;
       });
 
       socket.on(
         ServerToClientEvent.PARTY_STATE,
         (state, hand, currentTurn, winner) => {
-          console.log("PARTY_STATE", state, hand, currentTurn);
           // If we get the board, match already started
           matchStarted = true;
           matchWinner = winner;
@@ -118,7 +116,6 @@
       );
 
       socket.on(ServerToClientEvent.TURN_TIMEOUT, (currentTurn) => {
-        console.log("TURN_TIMEOUT", currentTurn);
         const lastTurnPlayer = findMatchPlayerById(
           currentTurn.turnPlayerId,
           matchPlayers
@@ -144,7 +141,6 @@
       socket.on(
         ServerToClientEvent.PLAYER_MOVEMENT,
         (movement, currentTurn) => {
-          console.log("PLAYER_MOVEMENT", movement, currentTurn);
           const { card, col, row, newSequences, team } = movement;
 
           lastPlayedCard = card;
@@ -164,7 +160,6 @@
       );
 
       socket.on(ServerToClientEvent.MATCH_FINISHED, (winner) => {
-        console.log("MATCH_FINISHED", winner);
         const matchFinishedTimeout = 10000;
 
         if (winner !== null) {
@@ -185,15 +180,15 @@
       });
 
       socket.on(ServerToClientEvent.PARTY_NEW_MATCH, (mode) => {
-        console.log(mode);
-        matchStarted = false;
+        notifications.clear();
+        if (mode !== PartyNewMatchMode.FAST_REMATCH) {
+          matchStarted = false;
+        }
         matchWinner = null;
       });
 
       socket.connect();
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   });
 
   function emitTurnNotification(currentTurnPlayerId: string) {
@@ -254,15 +249,9 @@
   // 🛎️ Event handlers below 👇
 
   function startNewGame(e: CustomEvent<{ mode: PartyNewMatchMode }>) {
-    console.log(e.detail);
-    socket.emit(
-      ClientToServerEvent.NEW_MATCH,
-      e.detail.mode,
-      (start, reason) => {
-        console.log(start, reason);
-        notifications.danger("Starting new match with mode " + e.detail.mode);
-      }
-    );
+    socket.emit(ClientToServerEvent.NEW_MATCH, e.detail.mode, () => {
+      notifications.info("Starting new match with mode " + e.detail.mode);
+    });
   }
 
   function startGame() {
@@ -289,8 +278,6 @@
       navigator.clipboard.writeText(linkToMatch);
       notifications.send("Copied match link to clipboard: " + linkToMatch);
     } catch (err) {
-      console.log(err);
-
       notifications.info(
         "Couldn't copy match link to clipboard: " + linkToMatch,
         10000
@@ -305,20 +292,6 @@
       e.detail.team
     );
   }
-
-  // $: {
-  //   console.log({
-  //     boardState,
-  //     playerHand,
-  //     currentMatchPlayer,
-  //     matchCurrentTurn,
-  //     matchCurrentTurnPlayer,
-  //     matchPlayers,
-  //     matchConfig,
-  //     lastPlayedCard,
-  //     matchStarted,
-  //   });
-  // }
 </script>
 
 <main class="pb-8 flex flex-col">

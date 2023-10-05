@@ -71,9 +71,8 @@ export function createNewPartyMatch(
   const newMatch = createMatch(owner);
   let nextPlayers = [...activeMatch.players];
 
-  console.log(mode);
   if (mode === PartyNewMatchMode.SHUFFLE) {
-    nextPlayers = nextPlayers.sort(() => Math.random() - 0.5);
+    nextPlayers = shuffleMatchPlayerTeams(nextPlayers);
   }
 
   newMatch.players = nextPlayers;
@@ -82,6 +81,27 @@ export function createNewPartyMatch(
   party.matchesCodes.push(newMatch.code);
 
   return newMatch;
+}
+
+export function shuffleMatchPlayerTeams(original: MatchPlayer[]) {
+  const array = original.slice();
+  let currentIndex = array.length,
+    randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex > 0) {
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex].team, array[randomIndex].team] = [
+      array[randomIndex].team,
+      array[currentIndex].team,
+    ];
+  }
+
+  return array;
 }
 
 export function joinParty(partyCode: string, player: Player): PartyJoinStatus {

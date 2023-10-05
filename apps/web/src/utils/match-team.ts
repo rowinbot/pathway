@@ -37,6 +37,19 @@ export function teamTurnHighlightColor(team: TeamI | null) {
   }
 }
 
+export function teamWinnerBoardColor(team: TeamI | null) {
+  switch (team) {
+    case TeamI.One:
+      return "#ffd9d9";
+    case TeamI.Two:
+      return "#d9d9ff";
+    case TeamI.Three:
+      return "#d9ffd9";
+    default:
+      return "#fff";
+  }
+}
+
 export function teamHeaderColor(team: TeamI) {
   switch (team) {
     case TeamI.One:

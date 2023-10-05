@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { PartyNewMatchMode } from "game-logic";
-
   import type {
     MatchPlayerHand,
     MatchConfig,
@@ -15,7 +13,8 @@
   import PlayerHand from "./player-hand.svelte";
   import TurnTimer from "./turn-timer.svelte";
   import Teams from "./teams.svelte";
-  import { getMatchTeamName } from "@/utils/match-team";
+  import { teamWinnerBoardColor } from "@/utils/match-team";
+  import Winner from "./winner.svelte";
 
   export let boardState: BoardState;
   export let matchCurrentTurn: MatchCurrentTurn | null = null;
@@ -29,7 +28,6 @@
 
   const dispatch = createEventDispatcher<{
     "pick-card": { card: CardObject; row: number; col: number };
-    "start-new-game": { mode: PartyNewMatchMode };
   }>();
 
   let showHintsForCard: CardObject | null = null;
@@ -38,27 +36,11 @@
   $: isCurrentPlayerTurn =
     matchCurrentTurnPlayer?.id === currentMatchPlayer?.id;
 
-  $: {
-    console.log(matchWinner);
-  }
-
   function onPickCard(
     e: CustomEvent<{ card: CardObject; row: number; col: number }>
   ) {
     showHintsForCard = null;
     dispatch("pick-card", e.detail);
-  }
-
-  function onShuffle() {
-    dispatch("start-new-game", { mode: PartyNewMatchMode.SHUFFLE });
-  }
-
-  function onFastRematch() {
-    dispatch("start-new-game", { mode: PartyNewMatchMode.FAST_REMATCH });
-  }
-
-  function onRematch() {
-    dispatch("start-new-game", { mode: PartyNewMatchMode.NORMAL });
   }
 </script>
 
@@ -72,43 +54,19 @@
     />
   {/if}
 
-  {#if matchWinner !== null && currentMatchPlayer?.isOwner}
-    <section class="max-w-xl mx-auto space-y-2 px-2">
-      <p class="text-2xl">
-        Winner team: <span class="font-bold"
-          >{getMatchTeamName(matchWinner)}</span
-        >
-      </p>
-
-      <div class="flex flex-row flex-wrap gap-4">
-        <button
-          on:click={onShuffle}
-          class="px-4 py-2 text-base bg-teal-700 border-[1px] border-teal-700 text-white rounded-lg uppercase"
-        >
-          Shuffle Rematch
-        </button>
-
-        <button
-          on:click={onFastRematch}
-          class="px-4 py-2 text-base bg-teal-700 border-[1px] border-teal-700 text-white rounded-lg uppercase"
-        >
-          Fast Rematch
-        </button>
-
-        <button
-          on:click={onRematch}
-          class="px-4 py-2 text-base bg-teal-700 border-[1px] border-teal-700 text-white rounded-lg uppercase"
-        >
-          Rematch
-        </button>
-      </div>
-    </section>
-  {/if}
+  <Winner
+    on:start-new-game
+    {matchWinner}
+    isOwner={currentMatchPlayer?.isOwner ?? false}
+  />
 
   <section
-    class="py-6 transition-colors duration-75"
-    class:bg-orange-100={!isCurrentPlayerTurn}
-    class:bg-green-100={isCurrentPlayerTurn}
+    class="py-6 transition-colors duration-75 relative"
+    style={matchWinner === null
+      ? ""
+      : `background: ${teamWinnerBoardColor(matchWinner)}`}
+    class:bg-orange-100={matchWinner === null && !isCurrentPlayerTurn}
+    class:bg-green-100={matchWinner === null && isCurrentPlayerTurn}
   >
     <div class="max-w-xl mx-auto space-y-2 px-2">
       <h2 class="text-2xl font-bold">Board</h2>
