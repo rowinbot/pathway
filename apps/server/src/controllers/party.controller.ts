@@ -64,7 +64,7 @@ router.post("/join/:code", function (req, res) {
   }
 
   return res.status(statusCode).json({
-    match: party,
+    party,
     partyJoinStatus: joinStatus,
   });
 });

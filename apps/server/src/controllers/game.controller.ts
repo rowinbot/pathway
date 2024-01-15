@@ -38,6 +38,7 @@ import {
   MatchCouldNotStartReason,
   NewMatchCouldNotStartReason,
 } from "game-logic/realtime";
+import { instrument } from "@socket.io/admin-ui";
 
 type AppServer = Server<
   ClientToServerEvents,
@@ -65,6 +66,11 @@ export function createGameSocket(httpServer: HttpServer) {
     cors: {
       origin: process.env.WEB_HOST ?? "http://localhost:3000",
     },
+  });
+
+  instrument(io, {
+    auth: false,
+    mode: "development",
   });
 
   io.on("connection", (socket) => {
