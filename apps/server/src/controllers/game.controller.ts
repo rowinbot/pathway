@@ -1,5 +1,6 @@
 import { getCurrentPlayer } from "@/helpers/player.helpers";
 import {
+  getMatchByCode,
   getMatchPlayer,
   movePlayerToTeam,
   nextMatchTurn,
@@ -158,7 +159,7 @@ function onPlayerConnected(
   };
 
   socket.onAny((event) => {
-    const match = getPartyActiveMatch(getPartyLastMatchCode(party));
+    const match = getMatchByCode(getPartyLastMatchCode(party));
     if (!match) return;
 
     if (event === ClientToServerEvent.MOVEMENT) {
@@ -166,8 +167,8 @@ function onPlayerConnected(
     }
   });
 
-  socket.on("disconnect", () => {
-    const match = getPartyActiveMatch(getPartyLastMatchCode(party));
+  socket.on("disconnecting", () => {
+    const match = getMatchByCode(getPartyLastMatchCode(party));
     if (!match) return;
 
     updatePartyPlayerConnected(party.code, player.id, false);
