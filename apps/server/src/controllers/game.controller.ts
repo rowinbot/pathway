@@ -166,7 +166,7 @@ function onPlayerConnected(
     }
   });
 
-  socket.on("disconnecting", () => {
+  socket.on("disconnect", () => {
     const match = getPartyActiveMatch(getPartyLastMatchCode(party));
     if (!match) return;
 
