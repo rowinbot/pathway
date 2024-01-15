@@ -152,7 +152,7 @@ function onPlayerConnected(
   )!;
 
   socket.data = {
-    ...socket.data,
+    ...socket.data, // https://github.com/socketio/socket.io-admin-ui/issues/55
     matchCode,
     playerId: player.id,
   };
