@@ -64,7 +64,10 @@ const matchCodeToTurnTimer = {} as Record<Match["code"], NodeJS.Timeout>;
 export function createGameSocket(httpServer: HttpServer) {
   const io: AppServer = new Server(httpServer, {
     cors: {
-      origin: process.env.WEB_HOST ?? "http://localhost:3000",
+      origin: [
+        process.env.WEB_HOST ?? "http://localhost:3000",
+        "https://admin.socket.io",
+      ],
     },
   });
 

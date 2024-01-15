@@ -12,7 +12,14 @@ export const initApp = () => {
     .use(morgan("dev"))
     .use(urlencoded({ extended: true }))
     .use(json())
-    .use(cors())
+    .use(
+      cors({
+        origin: [
+          process.env.WEB_HOST ?? "http://localhost:3000",
+          "https://admin.socket.io",
+        ],
+      })
+    )
     .use("/party", partyRouter)
     .use("/player", playerRouter)
     .get("/healthz", (_req, res) => {
