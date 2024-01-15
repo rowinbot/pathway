@@ -68,6 +68,7 @@ export function createGameSocket(httpServer: HttpServer) {
         process.env.WEB_HOST ?? "http://localhost:3000",
         "https://admin.socket.io",
       ],
+      credentials: true,
     },
   });
 
@@ -151,6 +152,7 @@ function onPlayerConnected(
   )!;
 
   socket.data = {
+    ...socket.data,
     matchCode,
     playerId: player.id,
   };
