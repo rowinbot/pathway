@@ -52,4 +52,4 @@ export function getPlayer(id: string) {
  * Generates random names, e.g big_red_donkey
  */
 const getRandomName = () =>
-  uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals] });
+  uniqueNamesGenerator({ dictionaries: [adjectives, animals] });

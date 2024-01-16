@@ -83,6 +83,12 @@ export function createGameSocket(httpServer: HttpServer) {
       socket.handshake.headers["x-party-code"]
     );
 
+    console.log(
+      `[Attempt to join] ${getSingleHeaderValue(
+        socket.handshake.headers["x-player-id"]
+      )} -> ${getSingleHeaderValue(socket.handshake.headers["x-party-code"])}`
+    );
+
     if (!partyCode) {
       return socket.disconnect();
     }
@@ -95,6 +101,9 @@ export function createGameSocket(httpServer: HttpServer) {
       return socket.disconnect();
     }
 
+    console.log(
+      `[New connection] successfully joined ${partyCode} as ${player.id}`
+    );
     // Header x-party-code
     const party = getPartyByCode(partyCode);
     const match = getPartyLastMatch(partyCode);

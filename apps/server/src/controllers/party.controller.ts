@@ -41,7 +41,9 @@ router.post("/join/:code", function (req, res) {
     return res.status(404).json({ partyJoinStatus: PartyJoinStatus.NOT_FOUND });
   }
 
-  if (activeMatch.started) {
+  const playerAlreadyInParty = party.players.some((p) => p.id === player.id);
+
+  if (activeMatch.started && !playerAlreadyInParty) {
     const matchPlayer = getMatchPlayer(code, player.id);
 
     if (!matchPlayer) {
