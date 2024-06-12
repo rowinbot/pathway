@@ -41,6 +41,7 @@ describe("finds new sequences from movement", () => {
       team
     );
 
+    // FIXME: Should be 4, cuz this movement is right in the middle of the board
     expect(newSequenceBounds).toHaveLength(2);
   });
 
