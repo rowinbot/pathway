@@ -68,22 +68,9 @@
   >
     <text
       text-anchor="start"
-      class="font-mono"
+      class="font-mono text-[3.8rem]"
       fill={blackCardKindColor}
       dy="1em">{cardNumber(card)}</text
-    >
-  </g>
-
-  <g
-    style="transform: translateX(calc({width - marginX}px)) translateY({height -
-      marginY}px)"
-  >
-    <text
-      style="transform: scaleX(-1) scaleY(-1)"
-      text-anchor="start"
-      class="font-mono"
-      fill={blackCardKindColor}
-      dy="0.75em">{cardNumber(card)}</text
     >
   </g>
 
