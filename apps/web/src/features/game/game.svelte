@@ -34,7 +34,6 @@
   import { getMatchTeamName } from "@/utils/match-team";
   import { notifications } from "@/features/notifications/notifications";
   import { matchCouldNotStartReasonText } from "@/utils/strings";
-  import Winner from "./started/winner.svelte";
 
   export let gameId: string;
 
@@ -56,7 +55,7 @@
 
   $: matchCurrentTurnPlayer = findMatchPlayerById(
     matchCurrentTurn?.turnPlayerId,
-    matchPlayers
+    matchPlayers,
   );
 
   let socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -110,15 +109,15 @@
             currentMatchPlayer
               ? "You are playing with the " +
                   getMatchTeamName(currentMatchPlayer.team)
-              : "You are playing as @" + player.nickname
+              : "You are playing as @" + player.nickname,
           );
-        }
+        },
       );
 
       socket.on(ServerToClientEvent.TURN_TIMEOUT, (currentTurn) => {
         const lastTurnPlayer = findMatchPlayerById(
           currentTurn.turnPlayerId,
-          matchPlayers
+          matchPlayers,
         )!;
 
         const wasYourTurn = lastTurnPlayer.id === currentMatchPlayer?.id;
@@ -131,7 +130,7 @@
               lastTurnPlayer.nickname +
               '" (' +
               getMatchTeamName(lastTurnPlayer.team) +
-              ")"
+              ")",
           );
         }
 
@@ -156,7 +155,7 @@
             updateBoardStateFromNewSequences(boardState, newSequences);
           matchCurrentTurn = currentTurn;
           emitTurnNotification(currentTurn.turnPlayerId);
-        }
+        },
       );
 
       socket.on(ServerToClientEvent.MATCH_FINISHED, (winner) => {
@@ -169,7 +168,7 @@
             winner === currentMatchPlayer?.team
               ? "You won the match! " + winnerTeamName
               : "Winner: " + winnerTeamName,
-            matchFinishedTimeout
+            matchFinishedTimeout,
           );
         } else {
           notifications.info("Match is a draw", matchFinishedTimeout);
@@ -194,7 +193,7 @@
   function emitTurnNotification(currentTurnPlayerId: string) {
     const matchCurrentTurnPlayer = findMatchPlayerById(
       currentTurnPlayerId,
-      matchPlayers
+      matchPlayers,
     )!;
     const isYourTurn = matchCurrentTurnPlayer?.id === player.id;
 
@@ -204,8 +203,8 @@
       } else {
         notifications.send(
           `${matchCurrentTurnPlayer.nickname} (${getMatchTeamName(
-            matchCurrentTurnPlayer.team
-          )}) turn`
+            matchCurrentTurnPlayer.team,
+          )}) turn`,
         );
       }
     }
@@ -223,14 +222,14 @@
         if (!playerHand) throw new Error("playerHand is null");
         if (movementResult.success && movementResult.card) {
           playerHand.cards = playerHand.cards.filter(
-            (card) => card.uid !== movementResult.card!.uid
+            (card) => card.uid !== movementResult.card!.uid,
           );
         }
 
         if (movementResult.nextCard) {
           playerHand.cards.push(movementResult.nextCard);
         }
-      }
+      },
     );
   }
 
@@ -240,7 +239,7 @@
 
   function findMatchPlayerById(
     id: string | null | undefined,
-    players: MatchPlayer[]
+    players: MatchPlayer[],
   ): MatchPlayer | null {
     if (id === null || id === undefined) return null;
     return players.find((player) => player.id === id) ?? null;
@@ -260,7 +259,8 @@
 
       if (!didStart && reason) {
         notifications.danger(
-          "Couldn't start match due to: " + matchCouldNotStartReasonText[reason]
+          "Couldn't start match due to: " +
+            matchCouldNotStartReasonText[reason],
         );
       }
     });
@@ -280,7 +280,7 @@
     } catch (err) {
       notifications.info(
         "Couldn't copy match link to clipboard: " + linkToMatch,
-        10000
+        10000,
       );
     }
   }
@@ -289,7 +289,7 @@
     socket.emit(
       ClientToServerEvent.MOVE_PLAYER_TO_TEAM,
       e.detail.playerId,
-      e.detail.team
+      e.detail.team,
     );
   }
 </script>

@@ -1,14 +1,9 @@
 <script lang="ts">
-  import type { MatchPlayerHand, Card as CardObject, TeamI } from "game-logic";
+  import { type MatchPlayerHand, type Card as CardObject } from "game-logic";
   import Card from "./card.svelte";
   import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
-  import CardContainer from "./cards/card-container.svelte";
-  import Coin from "./cards/coin.svelte";
-  import TeamCoins from "./cards/team-coins.svelte";
-  import { teamTokenColor } from "@/utils/match-team";
 
-  export let playerTeam: TeamI;
   export let playerHand: MatchPlayerHand;
   export let lastPlayedCard: CardObject | null = null;
   export let showHintsForCard: CardObject | null = null;
@@ -26,58 +21,42 @@
     }
   }
 
-  function onClickShowAllHints() {
-    showAllHints = !showAllHints;
-    showHintsForCard = null;
-  }
-
   const activeHintBorderColor = "blue";
 </script>
 
-<section class="flex-1 max-w-xl mx-auto space-y-2 px-2">
-  <h2 class="text-2xl font-bold">Your hand</h2>
-
-  <ul class="grid grid-cols-10 gap-1 md:gap-2">
-    {#each playerHand.cards as card (card.uid)}
-      <li animate:flip in:fly={{ y: -5 }} out:fly={{ y: 100 }}>
-        <Card
-          {card}
-          row={0}
-          col={0}
-          disabled={false}
-          occupiedByTeam={null}
-          borderColor={showHintsForCard?.id === card.id
-            ? activeHintBorderColor
-            : null}
-          on:pick-card={onPickHandCard}
-        />
-      </li>
-    {/each}
-
-    <li>
-      <CardContainer
-        on:click={onClickShowAllHints}
-        borderColor={showAllHints ? activeHintBorderColor : null}
-      >
-        <Coin color="#383838" />
-      </CardContainer>
+<ul class="grid grid-cols-10 gap-1 md:gap-1">
+  {#each playerHand.cards as card (card.uid)}
+    <li animate:flip in:fly={{ y: -5 }} out:fly={{ y: 100 }}>
+      <Card
+        {card}
+        row={0}
+        col={0}
+        disabled={false}
+        occupiedByTeam={null}
+        borderColor={showHintsForCard?.id === card.id
+          ? activeHintBorderColor
+          : null}
+        on:pick-card={onPickHandCard}
+      />
     </li>
+  {/each}
 
+  <li></li>
+
+  <li class="m-auto">
+    <slot />
+  </li>
+
+  {#if lastPlayedCard}
     <li>
-      <TeamCoins color={teamTokenColor(playerTeam)} />
+      <Card
+        card={lastPlayedCard}
+        row={0}
+        col={0}
+        disabled={true}
+        occupiedByTeam={null}
+        on:pick-card={onPickHandCard}
+      />
     </li>
-
-    {#if lastPlayedCard}
-      <li>
-        <Card
-          card={lastPlayedCard}
-          row={0}
-          col={0}
-          disabled={true}
-          occupiedByTeam={null}
-          on:pick-card={onPickHandCard}
-        />
-      </li>
-    {/if}
-  </ul>
-</section>
+  {/if}
+</ul>

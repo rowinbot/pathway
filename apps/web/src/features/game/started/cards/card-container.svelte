@@ -18,7 +18,6 @@
     xmlns="http://www.w3.org/2000/svg"
   >
     <rect {width} {height} rx="11" fill={bgColor} />
-    <rect {width} {height} rx="11" fill={bgColor} />
 
     <slot />
   </svg>

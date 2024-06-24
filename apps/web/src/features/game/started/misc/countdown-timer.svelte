@@ -51,26 +51,19 @@
   });
 </script>
 
-<p>
-  <svg
-    class="w-20 h-20 text-3xl font-bold"
-    viewBox="0 0 100 100"
-    aria-label={`${currentTurnDelta} seconds left for current turn`}
-  >
-    <g class="-rotate-90" style="transform-origin: center;">
-      <path d={secondCirclePath} class="fill-gray-600 opacity-10" />
-      <path d={firstCirclePath} class="fill-blue-600" />
-    </g>
+<svg
+  class="w-full aspect-square text-3xl font-bold"
+  viewBox="0 0 100 100"
+  aria-label={`${currentTurnDelta} seconds left for current turn`}
+>
+  <g class="-rotate-90" style="transform-origin: center;">
+    <path d={secondCirclePath} class="fill-gray-600 opacity-10" />
+    <path d={firstCirclePath} class="fill-blue-600" />
+  </g>
 
-    <circle
-      cx="50"
-      cy="50"
-      r="43"
-      class="fill-none stroke-[5] stroke-blue-200"
-    />
+  <circle cx="50" cy="50" r="43" class="fill-none stroke-[5] stroke-blue-200" />
 
-    <text x="50" y="50" text-anchor="middle" dy="0.35em">
-      {currentTurnDelta}
-    </text>
-  </svg>
-</p>
+  <text x="50" y="50" text-anchor="middle" dy="0.35em">
+    {currentTurnDelta}
+  </text>
+</svg>

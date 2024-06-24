@@ -10,11 +10,10 @@
   } from "game-logic";
   import Board from "./board.svelte";
   import { createEventDispatcher } from "svelte";
-  import PlayerHand from "./player-hand.svelte";
-  import TurnTimer from "./turn-timer.svelte";
   import Teams from "./teams.svelte";
   import { teamWinnerBoardColor } from "@/utils/match-team";
   import Winner from "./winner.svelte";
+  import BottomBar from "./bottom-bar.svelte";
 
   export let boardState: BoardState;
   export let matchCurrentTurn: MatchCurrentTurn | null = null;
@@ -37,23 +36,14 @@
     matchCurrentTurnPlayer?.id === currentMatchPlayer?.id;
 
   function onPickCard(
-    e: CustomEvent<{ card: CardObject; row: number; col: number }>
+    e: CustomEvent<{ card: CardObject; row: number; col: number }>,
   ) {
     showHintsForCard = null;
     dispatch("pick-card", e.detail);
   }
 </script>
 
-<div class="space-y-4">
-  {#if matchWinner === null}
-    <TurnTimer
-      {matchConfig}
-      {currentMatchPlayer}
-      {matchCurrentTurn}
-      {matchCurrentTurnPlayer}
-    />
-  {/if}
-
+<div class="relative">
   <Winner
     on:start-new-game
     {matchWinner}
@@ -68,7 +58,7 @@
     class:bg-orange-100={matchWinner === null && !isCurrentPlayerTurn}
     class:bg-green-100={matchWinner === null && isCurrentPlayerTurn}
   >
-    <div class="max-w-xl mx-auto space-y-2 px-2">
+    <div class="max-w-xl mx-auto space-y-2 px-2 flex-shrink-0">
       <h2 class="text-2xl font-bold">Board</h2>
 
       <Board
@@ -82,15 +72,16 @@
     </div>
   </section>
 
-  {#if currentMatchPlayer && playerHand}
-    <PlayerHand
-      {playerHand}
-      {lastPlayedCard}
-      playerTeam={currentMatchPlayer.team}
-      bind:showHintsForCard
-      bind:showAllHints
-    />
-  {/if}
-
-  <Teams {matchPlayers} {currentMatchPlayer} {matchCurrentTurnPlayer} />
+  <BottomBar
+    {matchConfig}
+    {currentMatchPlayer}
+    {matchCurrentTurn}
+    {playerHand}
+    {lastPlayedCard}
+    {matchCurrentTurnPlayer}
+    bind:showHintsForCard
+    bind:showAllHints
+  />
 </div>
+
+<Teams {matchPlayers} {currentMatchPlayer} {matchCurrentTurnPlayer} />

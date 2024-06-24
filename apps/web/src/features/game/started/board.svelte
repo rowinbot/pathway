@@ -24,7 +24,7 @@
 </script>
 
 <ul
-  class="grid grid-cols-10 gap-1 md:gap-2 pt-5 flex-1 max-w-5xl w-full mx-auto"
+  class="grid grid-cols-10 gap-1 md:gap-1 pt-5 flex-1 max-w-5xl w-full mx-auto"
 >
   {#each staticBoardRows as row, rowI}
     {#each row as card, colI}
@@ -37,17 +37,17 @@
                 playerHand,
                 rowI,
                 colI,
-                true
+                true,
               ) === null
             : showHintsForCard
-            ? testHandCardToPositionInBoard(
-                boardState,
-                currentMatchPlayer.team,
-                showHintsForCard,
-                rowI,
-                colI
-              ) === false
-            : false
+              ? testHandCardToPositionInBoard(
+                  boardState,
+                  currentMatchPlayer.team,
+                  showHintsForCard,
+                  rowI,
+                  colI,
+                ) === false
+              : false
           : false}
 
         <li in:fly={{ y: -5 }}>
