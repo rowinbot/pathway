@@ -23,9 +23,7 @@
   export let showAllHints: boolean = false;
 </script>
 
-<ul
-  class="grid grid-cols-10 gap-1 md:gap-1 pt-5 flex-1 max-w-5xl w-full mx-auto"
->
+<ul class="grid grid-cols-10 gap-1 md:gap-1 flex-1 max-w-5xl w-full mx-auto">
   {#each staticBoardRows as row, rowI}
     {#each row as card, colI}
       {#if !isEmptyCard(card)}

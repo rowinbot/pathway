@@ -62,7 +62,7 @@
   />
 
   <section
-    class="py-6 transition-colors duration-75 relative"
+    class="py-4 transition-colors duration-75 relative"
     style={matchWinner === null
       ? ""
       : `background: ${teamWinnerBoardColor(matchWinner)}`}
@@ -70,7 +70,7 @@
     class:bg-green-100={matchWinner === null && isCurrentPlayerTurn}
   >
     <div class="max-w-xl mx-auto space-y-2 px-2 flex-shrink-0">
-      <h2 class="text-2xl font-bold">Board</h2>
+      <h2 class="text-xl font-bold">Board</h2>
 
       <Board
         {playerHand}
