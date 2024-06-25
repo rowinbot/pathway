@@ -43,20 +43,19 @@
 
   <li></li>
 
-  <li class="m-auto">
-    <slot />
-  </li>
-
-  {#if lastPlayedCard}
-    <li>
+  <li>
+    {#if lastPlayedCard}
       <Card
         card={lastPlayedCard}
         row={0}
         col={0}
         disabled={true}
         occupiedByTeam={null}
-        on:pick-card={onPickHandCard}
       />
-    </li>
-  {/if}
+    {/if}
+  </li>
+
+  <li class="m-auto">
+    <slot />
+  </li>
 </ul>

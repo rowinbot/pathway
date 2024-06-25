@@ -8,17 +8,18 @@
   export let borderColor: string | null = null;
 </script>
 
-<button on:click>
+<button
+  class="h-full rounded-lg border-[1px]"
+  style="border-color: {borderColor ?? '#ddd'}; background-color: {bgColor};"
+  on:click
+>
   <svg
     width="100%"
     viewBox="0 0 {width} {height}"
     fill="none"
-    class="text-5xl rounded-lg border-[1px]"
-    style="border-color: {borderColor ?? '#ddd'};"
+    class="text-5xl"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect {width} {height} rx="11" fill={bgColor} />
-
     <slot />
   </svg>
 </button>

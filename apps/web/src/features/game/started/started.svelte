@@ -13,7 +13,7 @@
   import Teams from "./teams.svelte";
   import { teamWinnerBoardColor } from "@/utils/match-team";
   import Winner from "./winner.svelte";
-  import BottomBar from "./bottom-bar.svelte";
+  import PlayerBar from "./player-bar.svelte";
 
   export let boardState: BoardState;
   export let matchCurrentTurn: MatchCurrentTurn | null = null;
@@ -44,6 +44,17 @@
 </script>
 
 <div class="relative">
+  <PlayerBar
+    {matchConfig}
+    {currentMatchPlayer}
+    {matchCurrentTurn}
+    {playerHand}
+    {lastPlayedCard}
+    {matchCurrentTurnPlayer}
+    bind:showHintsForCard
+    bind:showAllHints
+  />
+
   <Winner
     on:start-new-game
     {matchWinner}
@@ -71,17 +82,6 @@
       />
     </div>
   </section>
-
-  <BottomBar
-    {matchConfig}
-    {currentMatchPlayer}
-    {matchCurrentTurn}
-    {playerHand}
-    {lastPlayedCard}
-    {matchCurrentTurnPlayer}
-    bind:showHintsForCard
-    bind:showAllHints
-  />
 </div>
 
 <Teams {matchPlayers} {currentMatchPlayer} {matchCurrentTurnPlayer} />

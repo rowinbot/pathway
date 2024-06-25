@@ -52,12 +52,14 @@
 </script>
 
 <svg
-  class="w-full aspect-square text-3xl font-bold"
+  class="w-full aspect-square text-3xl font-bold rounded-full"
   viewBox="0 0 100 100"
   aria-label={`${currentTurnDelta} seconds left for current turn`}
 >
+  <circle cx="50" cy="50" r="43" class="fill-white" />
+
   <g class="-rotate-90" style="transform-origin: center;">
-    <path d={secondCirclePath} class="fill-gray-600 opacity-10" />
+    <path d={secondCirclePath} class="fill-blue-600 opacity-10" />
     <path d={firstCirclePath} class="fill-blue-600" />
   </g>
 

@@ -1,5 +1,5 @@
 export const CARD_WIDTH = 240;
-export const CARD_HEIGHT = 336 / 1.25;
+export const CARD_HEIGHT = 336 / 1.3;
 
 // Compat between Node (max 10 precission) and Browsers (max 8 precission).
 function fixFloatForSsr(num: number): number {

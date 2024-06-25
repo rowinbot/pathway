@@ -26,7 +26,7 @@
 </script>
 
 <section
-  class="py-2 flex-shrink-0 mx-auto sticky bottom-0 inset-x-0 bg-blue-900 bg-opacity-20 backdrop-blur-2xl items-center flex flex-col"
+  class="pb-4 flex-shrink-0 mx-auto sticky bottom-0 inset-x-0 items-center flex flex-col"
 >
   <div class="space-y-2 max-w-xl px-2">
     <div class="flex flex-row justify-between items-center">
@@ -48,7 +48,7 @@
       {/if}
 
       <button
-        class="px-4 py-2 flex flex-row gap-2 items-center bg-white rounded-full"
+        class="px-4 py-2 flex flex-row gap-2 items-center bg-green-100 ring-1 ring-green-600 rounded-full"
         on:click={onClickShowAllHints}
       >
         {#if showAllHints}

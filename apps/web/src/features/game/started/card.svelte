@@ -32,9 +32,6 @@
     "pick-card": BoardPosition & { card: Card };
   }>();
 
-  const width = 240;
-  const height = 280;
-
   const marginX = 15;
   const marginY = 20;
 
